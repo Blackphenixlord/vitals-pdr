@@ -1,0 +1,64 @@
+id: acute_sinusitis
+name: Sinus Infection
+aka: [acute sinusitis, rhinosinusitis, sinus infection]
+category: ent
+urgency: routine
+# NASA IMM baseline (2017): 6 events / 45.49 person-years = 0.132 per
+# person-year (5 STS, 1 Apollo, 0 ISS).
+prior: 0.03
+
+description: >
+  Inflammation and infection of the sinuses. Pain and pressure over the
+  cheeks or forehead, thick yellow or green mucus, a blocked nose, sometimes
+  fever. Most cases clear on their own; antibiotics are for the ones that
+  last or get worse.
+
+microgravity_note: >
+  This is the infection that the fluid-shift congestion is NOT. Almost every
+  crewmember has a stuffy nose and a full face from the fluid shift, and that
+  is physics, not infection. Sinusitis is the rarer case where the swollen
+  lining traps mucus and it becomes infected. The tells are thick colored
+  mucus, facial PAIN rather than fullness, fever, and a time course - lasting
+  more than 10 days, or improving and then getting worse. NASA notes 65% of
+  cases improve without any antibiotic, which matters when the kit is finite.
+
+findings:
+  - finding: facial_pain_pressure
+    weight: 1.6
+    note: Pain over the sinuses, as opposed to the painless fullness of the fluid shift.
+  - finding: purulent_discharge
+    weight: 1.6
+    note: Thick yellow or green mucus.
+  - finding: nasal_congestion
+    weight: 0.6
+  - finding: fever
+    weight: 0.8
+  - finding: symptoms_over_10_days
+    weight: 1.0
+  - finding: worse_after_improving
+    weight: 1.6
+    note: Getting better and then worse again (double worsening) is the classic sign a cold has turned into a bacterial sinusitis.
+  - finding: tooth_pain
+    weight: 0.4
+    note: Upper back teeth can ache from the maxillary sinus.
+  - finding: congestion_since_arrival
+    weight: -1.6
+    note: Congestion present since launch is the fluid shift, not infection.
+  - finding: facial_fullness
+    weight: 0.2
+    note: Near-universal on orbit, so it is almost worthless here.
+
+red_flags: [diplopia, confusion, eyelid_lump_or_swelling]
+
+recommend:
+  - Saline rinse or spray, fluids, and decongestant or pain relief from the kit as directed.
+  - Record mucus color, temperature and how many days it has lasted.
+  - Ask ground medical about an antibiotic if it has lasted more than 10 days, came back worse after improving, or there is fever with facial pain.
+  - Contact ground medical now for swelling or redness around the eye, double vision, a severe headache or confusion - these mean it may be spreading.
+
+differential: [sinonasal_congestion, urti, dental_emergency]
+
+sources:
+  - title: "Acute Sinusitis - NASA Integrated Medical Model CliFF Baseline (2017)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/acute-sinusitis-cliff.pdf"
+    note: 0.132 per person-year; cephalad fluid shift engorges the sinus mucosa; 65% improve without antibiotics.

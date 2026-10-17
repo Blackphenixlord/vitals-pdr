@@ -1,0 +1,67 @@
+id: eye_infection
+name: Eye Infection (Pink Eye or Stye)
+aka: [conjunctivitis, pink eye, stye, hordeolum, chalazion, blepharitis]
+category: infectious
+urgency: monitor
+# NASA IMM baseline (2020): 12 events / 45.49 person-years = 0.264 per
+# person-year. In-flight cases seen: 3 styes, 1 blepharitis, eyelid pustules.
+prior: 0.05
+
+description: >
+  Infection of the thin layer over the white of the eye (pink eye) or of an
+  eyelid gland (stye). Red eye with sticky or crusty discharge, or a sore
+  lump on the eyelid. Usually mild, but infectious pink eye spreads easily.
+
+microgravity_note: >
+  Crew share a small sealed volume, towels and surfaces, so a contagious pink
+  eye can move through the crew. Eye drops do not fall into the eye on orbit
+  - they cling to the bottle tip or float, so aim and touch the drop to the
+  inside of the lower lid. NASA's in-flight eye infections have so far been
+  eyelid infections (styes, blepharitis), not the cornea. Pain, light
+  sensitivity or blurred vision suggest something worse than pink eye.
+
+findings:
+  - finding: eye_discharge
+    weight: 2.2
+    absent_weight: -1.0
+    note: Sticky or crusty discharge is what separates infection from irritation.
+  - finding: eye_redness
+    weight: 1.2
+  - finding: eyelid_lump_or_swelling
+    weight: 1.8
+    note: A tender lump on the lid is a stye.
+  - finding: itching
+    weight: 0.4
+  - finding: eye_watering
+    weight: 0.4
+  - finding: eye_foreign_body_sensation
+    weight: -0.8
+    note: A feeling of something in the eye points to a foreign body instead.
+  - finding: eye_pain
+    weight: 0.3
+    note: Pink eye is gritty, not painful. Real pain is a warning sign.
+  - finding: light_sensitivity
+    weight: 0.3
+    note: Light hurting is a red flag for a corneal infection.
+  - finding: vision_loss_sudden
+    weight: 0.2
+  - finding: others_affected
+    weight: 0.8
+    note: Another crewmember with red eyes - contagious conjunctivitis.
+  - finding: chemical_exposure
+    weight: -1.0
+
+red_flags: [light_sensitivity, vision_loss_sudden]
+
+recommend:
+  - Wash hands often and do not share towels, wipes or eye drops; clean shared surfaces.
+  - Warm compress for 10 minutes several times a day for a stye; never squeeze it.
+  - Examine the eye with a light; ask ground medical about antibiotic eye drops from the kit if the discharge is thick.
+  - Contact ground medical now for real eye pain, light hurting the eye, or blurred or reduced vision - that may be the cornea, not pink eye.
+
+differential: [eye_foreign_body, allergic_reaction, toxic_inhalation]
+
+sources:
+  - title: "Eye Infection - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/eye-infection-cliff.pdf"
+    note: 0.264 per person-year; in-flight cases were eyelid infections; best case 86% mild.

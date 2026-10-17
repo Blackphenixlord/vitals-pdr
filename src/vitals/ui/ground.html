@@ -1,0 +1,609 @@
+<!doctype html>
+<!--
+  VITALS - ground crew screen (GCUI).
+  From the Sep 2026 whiteboard plan: the ground crew sees EVERYTHING VITALS
+  said, can correct the crewmember's details, decides what the doctor is
+  allowed to see, sends a redacted packet, then checks the doctor's reply and
+  releases it to the astronaut. Not a copy of Cruz's Figma - same idea, same
+  look as the astronaut screen.
+
+  WHAT THIS PAGE DOES NOT DO
+    - It does not redact anything itself. It sends the list of fields to hide,
+      and the SERVER builds the doctor's packet, so a hidden field never leaves
+      the Jetson. (cases.py)
+    - It writes no medical wording. Conditions, reasons, advice and sources are
+      the engine's; the doctor's words are the doctor's.
+
+  RULES (UI_ACCEPTANCE_CRITERIA.md): level is a WORD plus a color; no
+  percentages; tap targets 44px+; works offline as one file.
+
+  Refreshes the case list every 5 seconds.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VITALS - ground crew</title>
+<style>
+  :root {
+    --bg: #14172e; --surface: #1c2042; --raised: #272c57; --raised-2: #323870; --line: #3a4078;
+    --ink: #eef0fb; --muted: #aab0dc; --signal: #8cc8ff; --signal-ink: #0b1830; --pulse: #e5484d;
+    --error-bg: #3d1f2a; --error-ink: #ffb8b8; --good: #81c995;
+    --emergency-bg: #d7262b; --emergency-ink: #ffffff;
+    --urgent-bg: #f28b00;    --urgent-ink: #14100a;
+    --monitor-bg: #fdd663;   --monitor-ink: #14100a;
+    --routine-bg: #81c995;   --routine-ink: #0b1a10;
+    --none-bg: #6c7090;      --none-ink: #ffffff;
+    --display: Bahnschrift, "DIN Alternate", "Barlow", "Roboto Condensed", system-ui, sans-serif;
+    --body: "Segoe UI", system-ui, Roboto, "Helvetica Neue", sans-serif;
+    --r-sm: 8px; --r-md: 14px; --r-lg: 20px;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 var(--body); }
+  a { color: var(--signal); }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+  .app { display: flex; flex-direction: column; height: 100vh; }
+  .topbar {
+    display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 10px 24px;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  .topbar .title { font: 600 20px/1.2 var(--display); letter-spacing: 2px; }
+  .topbar .sub { color: var(--muted); font-size: 14px; }
+  .topbar .who { margin-left: auto; color: var(--muted); font-size: 15px; text-align: right; }
+  .topbar .who b { color: var(--ink); }
+  .btn {
+    min-height: 48px; padding: 0 18px; border-radius: var(--r-md);
+    border: 1px solid var(--line); background: var(--raised);
+  }
+  .btn:hover { border-color: var(--signal); }
+  .btn.primary { background: var(--signal); color: var(--signal-ink); border-color: var(--signal); font-weight: 650; }
+  .btn.primary:hover { filter: brightness(1.08); }
+
+  .main { flex: 1; min-height: 0; display: flex; }
+
+  /* ---- case list ---- */
+  .list { flex: 0 0 360px; display: flex; flex-direction: column; border-right: 1px solid var(--line); background: var(--surface); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 16px 6px; }
+  .filters button {
+    min-height: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line);
+    background: transparent; color: var(--muted); font-size: 15px;
+  }
+  .filters button[aria-pressed="true"] { background: var(--raised-2); color: var(--ink); border-color: var(--signal); }
+  .cases { flex: 1; overflow-y: auto; padding: 8px 12px 16px; }
+  .case-row {
+    display: block; width: 100%; text-align: left; margin-bottom: 8px; padding: 12px 14px;
+    border-radius: var(--r-md); border: 1px solid transparent; background: var(--raised);
+  }
+  .case-row:hover { background: var(--raised-2); }
+  .case-row.current { border-color: var(--signal); }
+  .case-row .top { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+  .case-row .name { font-weight: 650; }
+  .case-row .line { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .case-row .meta { color: var(--muted); font-size: 14px; }
+  .empty { color: var(--muted); padding: 16px; }
+
+  /* level chip: word + color, never color alone */
+  .lvl { display: inline-block; min-width: 92px; padding: 2px 10px; border-radius: var(--r-sm);
+         font: 700 14px/1.6 var(--display); letter-spacing: 1px; text-align: center; }
+  .lvl.emergency { background: var(--emergency-bg); color: var(--emergency-ink); }
+  .lvl.urgent { background: var(--urgent-bg); color: var(--urgent-ink); }
+  .lvl.monitor { background: var(--monitor-bg); color: var(--monitor-ink); }
+  .lvl.routine { background: var(--routine-bg); color: var(--routine-ink); }
+  .lvl.none { background: var(--none-bg); color: var(--none-ink); }
+  .status { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px;
+            background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
+  .status.needs { border-color: var(--monitor-bg); color: var(--monitor-bg); font-weight: 600; }
+  .tag-emergency { font-size: 13px; font-weight: 700; padding: 1px 8px; border-radius: 999px;
+                   background: var(--emergency-bg); color: var(--emergency-ink); }
+
+  /* ---- detail ---- */
+  .detail { flex: 1; min-width: 0; overflow-y: auto; padding: 22px 28px 60px; }
+  .detail > * { max-width: 900px; }
+  .head h1 { margin: 0 0 6px; font: 600 26px/1.2 var(--display); }
+  .head .meta { color: var(--muted); font-size: 15px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+  section.box { margin-top: 18px; padding: 18px 20px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); }
+  section.box > h2 { margin: 0 0 12px; font: 600 19px/1.3 var(--display); color: var(--signal); }
+  section.box.action { border-color: var(--monitor-bg); }
+  .muted { color: var(--muted); }
+  .small { font-size: 14px; }
+
+  .turn { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .turn:last-child { border-bottom: 0; }
+  .said { padding: 10px 14px; border-radius: var(--r-md); background: var(--raised-2); white-space: pre-wrap; }
+  .said .when { display: block; font-size: 13px; color: var(--muted); }
+  .answer { margin-top: 10px; padding-left: 14px; border-left: 3px solid var(--line); }
+  .answer .row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px; }
+  .cond { padding: 8px 0; border-top: 1px dashed var(--line); }
+  .cond .nm { font-weight: 650; }
+  .cond ul { margin: 4px 0; padding-left: 22px; }
+  details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--muted); }
+  details summary:hover { color: var(--ink); }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 15px; }
+  .kv dt { color: var(--muted); } .kv dd { margin: 0; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1.4fr 48px; gap: 8px; margin-bottom: 8px; }
+  input[type=text], textarea {
+    width: 100%; min-height: 48px; padding: 10px 12px; border-radius: var(--r-md);
+    border: 1px solid var(--line); background: var(--raised);
+  }
+  textarea { min-height: 96px; resize: vertical; }
+  input:focus, textarea:focus { outline: 2px solid var(--signal); border-color: var(--signal); }
+  .icon-btn { width: 48px; height: 48px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--raised); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+  .checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 6px; margin-bottom: 12px; }
+  .check { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px;
+           border-radius: var(--r-md); background: var(--raised); cursor: pointer; font-size: 15px; }
+  .check input { width: 22px; height: 22px; accent-color: var(--signal); }
+  .check .hint { margin-left: auto; color: var(--muted); font-size: 14px; }
+
+  .verdict { display: inline-block; padding: 4px 12px; border-radius: 999px; background: var(--raised-2); font-weight: 650; }
+  .msg { margin-top: 10px; padding: 10px 14px; border-radius: var(--r-md); font-size: 15px; }
+  .msg.err { background: var(--error-bg); color: var(--error-ink); }
+  .msg.ok { background: #1d3a2a; color: #c9f2d6; }
+  .log li { color: var(--muted); font-size: 14px; }
+
+  /* the packet, as the doctor will see it - this is what prints to PDF */
+  .packet { background: var(--raised); border-radius: var(--r-md); padding: 14px 16px; }
+  .packet h3 { margin: 12px 0 4px; font: 600 16px var(--display); }
+  .packet h3:first-child { margin-top: 0; }
+
+  @media (max-width: 860px) {
+    .list { flex-basis: 250px; }
+    .detail { padding: 16px; }
+  }
+
+  /* Print / "Save as PDF": only the doctor packet, in black on white. */
+  @media print {
+    body { background: #fff; color: #000; font-size: 12pt; }
+    .topbar, .list, .no-print, section.box:not(.printable) { display: none !important; }
+    .app, .main, .detail { display: block; height: auto; overflow: visible; padding: 0; }
+    section.box.printable { border: 0; padding: 0; background: #fff; }
+    .packet { background: #fff; color: #000; padding: 0; }
+    .lvl { border: 1px solid #000; }
+    .print-only { display: block !important; }
+  }
+  .print-only { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div>
+      <div class="title">VITALS - GROUND CREW</div>
+      <div class="sub">Diagnosis + decision support · a doctor has the final say</div>
+    </div>
+    <div class="who" id="who"></div>
+    <button class="btn" id="lock" type="button">Lock</button>
+  </header>
+
+  <div class="main">
+    <nav class="list" aria-label="Cases">
+      <div class="filters" id="filters">
+        <button data-filter="active" aria-pressed="true">Needs action</button>
+        <button data-filter="open" aria-pressed="false">New</button>
+        <button data-filter="with_doctor" aria-pressed="false">With doctor</button>
+        <button data-filter="released" aria-pressed="false">Released</button>
+        <button data-filter="all" aria-pressed="false">All</button>
+      </div>
+      <div class="cases" id="cases"><p class="empty">Loading cases…</p></div>
+    </nav>
+
+    <main class="detail" id="detail">
+      <p class="muted">Pick a case on the left. New cases appear here as soon as an astronaut gets an answer from VITALS.</p>
+    </main>
+  </div>
+</div>
+
+<script>
+const LEVEL_WORDS = { emergency: "EMERGENCY", urgent: "URGENT", monitor: "MONITOR", routine: "ROUTINE", none: "NO MATCH" };
+const STATUS_WORDS = {
+  open: "New - not sent", with_doctor: "With the doctor",
+  doctor_replied: "Doctor replied - check it", released: "Released to astronaut",
+};
+const STRENGTH_WORDS = { high: "Strong match", moderate: "Possible", low: "Unlikely" };
+const REFRESH_SECONDS = 5;
+const IDLE_LOCK_MINUTES = 15;
+
+const $ = id => document.getElementById(id);
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined && text !== null) n.textContent = text;
+  return n;
+}
+const when = t => new Date(t * 1000).toLocaleString();
+const ago = t => {
+  const s = Math.max(0, Math.round(Date.now() / 1000 - t));
+  if (s < 60) return `${s}s ago`; if (s < 3600) return `${Math.round(s / 60)} min ago`;
+  if (s < 86400) return `${Math.round(s / 3600)} h ago`; return when(t);
+};
+function levelChip(level) { return el("span", "lvl " + (level || "none"), LEVEL_WORDS[level] || LEVEL_WORDS.none); }
+function statusChip(status) {
+  return el("span", "status" + (status === "open" || status === "doctor_replied" ? " needs" : ""), STATUS_WORDS[status] || status);
+}
+
+function backToLogin() {
+  let page = "/";
+  try { page = sessionStorage.getItem("vitals-login") || "/"; } catch (e) {}
+  location.href = page;
+}
+async function getJSON(url) {
+  const r = await fetch(url);
+  if (r.status === 401) { backToLogin(); throw new Error("logged out"); }
+  return r.json();
+}
+async function postJSON(url, body) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+  if (r.status === 401) { backToLogin(); throw new Error("logged out"); }
+  return r.json();
+}
+
+/* ---- who ---- */
+async function loadMe() {
+  const r = await fetch("/api/me");
+  if (r.status === 401) return backToLogin();
+  const me = await r.json();
+  if (me.role !== "ground") return backToLogin();
+  $("who").innerHTML = "";
+  $("who").appendChild(el("b", null, me.name));
+  $("who").appendChild(el("div", null, "Ground crew"));
+}
+async function lock() { await fetch("/api/logout", { method: "POST", body: "{}" }); backToLogin(); }
+$("lock").onclick = lock;
+let idle = null;
+function resetIdle() { clearTimeout(idle); idle = setTimeout(lock, IDLE_LOCK_MINUTES * 60000); }
+["click", "keydown", "touchstart"].forEach(e => document.addEventListener(e, resetIdle));
+
+/* ---- list ---- */
+let filter = "active";
+let cases = [];
+let currentId = null;
+let currentUpdated = null;
+let editing = false;           // do not redraw the case under someone who is typing
+
+document.querySelectorAll("#filters button").forEach(b => b.onclick = () => {
+  filter = b.dataset.filter;
+  document.querySelectorAll("#filters button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  drawList();
+});
+
+function visible(c) {
+  if (filter === "all") return true;
+  if (filter === "active") return c.status === "open" || c.status === "doctor_replied" || c.new_since_sent;
+  if (filter === "with_doctor") return c.status === "with_doctor" || c.status === "doctor_replied";
+  return c.status === filter;
+}
+
+async function loadList() {
+  try {
+    const data = await getJSON("/api/ground/cases");
+    if (!data.ok) return;
+    cases = data.cases;
+    drawList();
+    const cur = cases.find(c => c.id === currentId);
+    if (cur && cur.updated !== currentUpdated && !editing) openCase(currentId);
+  } catch (e) { /* server restarting - next round */ }
+}
+
+function drawList() {
+  const box = $("cases");
+  box.innerHTML = "";
+  const shown = cases.filter(visible);
+  if (!shown.length) {
+    box.appendChild(el("p", "empty", cases.length ? "Nothing here. Try another filter." : "No cases yet."));
+    return;
+  }
+  shown.forEach(c => {
+    const row = el("button", "case-row" + (c.id === currentId ? " current" : ""));
+    row.type = "button";
+    const top = el("div", "top");
+    top.appendChild(levelChip(c.level));
+    top.appendChild(el("span", "name", c.crew_name));
+    if (c.emergency) top.appendChild(el("span", "tag-emergency", "EMERGENCY ACCESS"));
+    row.appendChild(top);
+    row.appendChild(el("div", "line", c.headline ? `VITALS: ${c.headline}` : c.title));
+    const meta = el("div", "meta");
+    meta.appendChild(statusChip(c.status));
+    meta.appendChild(document.createTextNode(`  ${ago(c.updated)}`));
+    if (c.new_since_sent) meta.appendChild(el("span", "status needs", " New messages since sent "));
+    row.appendChild(meta);
+    row.onclick = () => openCase(c.id);
+    box.appendChild(row);
+  });
+}
+
+/* ---- one case ---- */
+async function openCase(id) {
+  currentId = id;
+  drawList();
+  const data = await getJSON(`/api/ground/case?id=${encodeURIComponent(id)}`);
+  if (!data.ok) { $("detail").textContent = data.error; return; }
+  currentUpdated = data.case.updated;
+  drawCase(data.case, data.default_hidden, data.verdicts);
+}
+
+function drawCase(c, defaultHidden, verdicts) {
+  const d = $("detail");
+  d.innerHTML = "";
+  const last = c.turns.length ? c.turns[c.turns.length - 1].answer : {};
+
+  // header
+  const head = el("div", "head");
+  head.appendChild(el("h1", null, c.title));
+  const meta = el("div", "meta");
+  meta.appendChild(levelChip(levelOf(last)));
+  meta.appendChild(statusChip(c.status));
+  meta.appendChild(el("span", null, c.crew.name));
+  if (c.crew.emergency) meta.appendChild(el("span", "tag-emergency", "EMERGENCY ACCESS"));
+  meta.appendChild(el("span", null, `Opened ${when(c.created)} - case ${c.id}`));
+  head.appendChild(meta);
+  d.appendChild(head);
+
+  // what to do now, depending on where the case is
+  d.appendChild(actionBox(c, defaultHidden, verdicts));
+
+  // everything VITALS said
+  const conv = el("section", "box");
+  conv.appendChild(el("h2", null, `What the astronaut said and what VITALS answered (${c.turns.length})`));
+  c.turns.forEach((t, i) => conv.appendChild(drawTurn(t, i === c.turns.length - 1)));
+  d.appendChild(conv);
+
+  d.appendChild(profileBox(c));
+
+  if (c.packet) d.appendChild(packetBox(c.packet));
+
+  const log = el("section", "box");
+  log.appendChild(el("h2", null, "History"));
+  const ul = el("ul", "log");
+  c.log.forEach(e => ul.appendChild(el("li", null, `${when(e.at)} - ${e.by} (${e.role}) ${e.action}`)));
+  log.appendChild(ul);
+  d.appendChild(log);
+}
+
+function levelOf(a) {
+  if (!a) return "none";
+  if (a.escalate) return (a.escalation && a.escalation.level === "emergency") ? "emergency" : "urgent";
+  const top = (a.differential || [])[0];
+  return top ? top.urgency : "none";
+}
+
+function drawTurn(turn, expanded) {
+  const box = el("div", "turn");
+  const said = el("div", "said");
+  said.appendChild(el("span", "when", `Astronaut, ${when(turn.at)}`));
+  said.appendChild(document.createTextNode(turn.text));
+  box.appendChild(said);
+
+  const a = turn.answer || {};
+  const ans = el("div", "answer");
+  const row = el("div", "row");
+  row.appendChild(levelChip(levelOf(a)));
+  if (a.escalate) row.appendChild(el("b", null, "VITALS told the astronaut to contact ground medical now"));
+  ans.appendChild(row);
+  if (a.escalation_reason) ans.appendChild(el("p", "small", `Why: ${a.escalation_reason}`));
+
+  const more = el("details");
+  if (expanded) more.open = true;
+  more.appendChild(el("summary", null, "Full VITALS output"));
+  (a.differential || []).forEach((cnd, i) => {
+    const cb = el("div", "cond");
+    cb.appendChild(el("div", "nm", `${i === 0 ? (cnd.confidence === "low" ? "Possible diagnosis: " : "Diagnosis: ") : ""}${cnd.name} - ${STRENGTH_WORDS[cnd.confidence] || "Possible"} (${cnd.urgency})`));
+    if (cnd.reasoning) cb.appendChild(el("div", null, cnd.reasoning));
+    if (cnd.supporting && cnd.supporting.length) cb.appendChild(el("div", "small muted", "For: " + cnd.supporting.join("; ")));
+    if (cnd.against && cnd.against.length) cb.appendChild(el("div", "small muted", "Against: " + cnd.against.join("; ")));
+    if (cnd.recommend && cnd.recommend.length) {
+      const ul = el("ul"); cnd.recommend.forEach(r => ul.appendChild(el("li", "small", r))); cb.appendChild(ul);
+    }
+    (cnd.sources || []).forEach(s => { const l = el("a", "small", s.title || s.url); l.href = s.url; l.target = "_blank"; cb.appendChild(l); cb.appendChild(el("br")); });
+    more.appendChild(cb);
+  });
+  if (!(a.differential || []).length) more.appendChild(el("p", "muted", "Nothing in the knowledge base fit."));
+  const kv = el("dl", "kv");
+  const add = (k, v) => { if (v === undefined || v === null || v === "") return; kv.appendChild(el("dt", null, k)); kv.appendChild(el("dd", null, v)); };
+  add("Least sure about", a.uncertainty);
+  add("Next questions", (a.next_questions || []).map(q => q.replace(/\s*\[[a-z0-9_]+\]\s*$/, "")).join(" / "));
+  add("Understood", (a.known || []).map(f => `${f.label}: ${f.value}`).join("; "));
+  add("Backup engine", a.trace && a.trace.crosscheck ? a.trace.crosscheck.text : "");
+  add("Dropped (invented by model)", (a.dropped || []).join(", "));
+  add("Model", a.model ? `${a.model}, ${a.elapsed}s` : "");
+  add("Sensors", a.sensor_status);
+  more.appendChild(kv);
+  ans.appendChild(more);
+  box.appendChild(ans);
+  return box;
+}
+
+function actionBox(c, defaultHidden, verdicts) {
+  const box = el("section", "box action no-print");
+  const msg = el("div", "msg"); msg.hidden = true;
+  const show = (text, ok) => { msg.hidden = false; msg.className = "msg " + (ok ? "ok" : "err"); msg.textContent = text; };
+
+  if (c.status === "open" || c.status === "with_doctor" || (c.status === "released" && c.new_since_sent)) {
+    box.appendChild(el("h2", null, c.status === "open" ? "Send to the doctor" : "Send to the doctor again"));
+    if (c.status === "with_doctor") box.appendChild(el("p", "muted", `Sent ${when(c.packet.sent_at)}. Waiting on the doctor. Sending again replaces what they have.`));
+    box.appendChild(el("p", null, "Tick what the doctor must NOT see (the name is hidden unless you untick it). The server builds the packet, so anything ticked never leaves the Jetson."));
+    const hiddenNow = c.packet ? new Set(c.packet.hidden) : new Set(defaultHidden);
+    const checks = el("div", "checks");
+    Object.entries(c.redactable).forEach(([key, label]) => {
+      const lab = el("label", "check");
+      const cb = el("input"); cb.type = "checkbox"; cb.value = key; cb.checked = hiddenNow.has(key);
+      lab.appendChild(cb); lab.appendChild(el("span", null, `Hide ${label.replace(/^Profile: /, "")}`));
+      checks.appendChild(lab);
+    });
+    box.appendChild(checks);
+    box.appendChild(el("label", "small muted", "Note to the doctor (optional)"));
+    const note = el("textarea"); note.placeholder = "e.g. Crewmember says pain started after the treadmill. Please advise on exercise.";
+    note.onfocus = () => editing = true; note.onblur = () => editing = false;
+    box.appendChild(note);
+    const actions = el("div", "actions");
+    const send = el("button", "btn primary", "Send to doctor"); send.type = "button";
+    send.onclick = async () => {
+      const hidden = [...box.querySelectorAll("input[type=checkbox]:checked")].map(x => x.value);
+      send.disabled = true;
+      const r = await postJSON("/api/ground/send", { id: c.id, hidden, note: note.value });
+      send.disabled = false;
+      if (!r.ok) return show(r.error);
+      show("Sent. The doctor's screen has it now.", true);
+      editing = false; currentUpdated = r.case.updated; drawCase(r.case, defaultHidden, verdicts); loadList();
+    };
+    actions.appendChild(send);
+    box.appendChild(actions);
+  }
+
+  if (c.review) {
+    box.appendChild(el("h2", null, c.status === "released" ? "Released to the astronaut" : "The doctor replied - check it, then release it"));
+    box.appendChild(el("span", "verdict", `Doctor: ${verdicts[c.review.verdict] || c.review.verdict}`));
+    box.appendChild(el("p", "small muted", `${c.review.by}, ${when(c.review.at)}`));
+    if (c.review.note) box.appendChild(el("p", "said", c.review.note));
+
+    if (c.status === "released") {
+      box.appendChild(el("p", "small muted", `Released ${when(c.release.at)} by ${c.release.by}. The astronaut sees:`));
+      box.appendChild(el("p", "said", c.release.note));
+    } else {
+      box.appendChild(el("label", "small muted", "Message the astronaut will see (edit if needed)"));
+      const note = el("textarea");
+      note.value = defaultRelease(c, verdicts);
+      note.onfocus = () => editing = true; note.onblur = () => editing = false;
+      box.appendChild(note);
+      const actions = el("div", "actions");
+      const rel = el("button", "btn primary", "Verified - release to astronaut"); rel.type = "button";
+      rel.onclick = async () => {
+        rel.disabled = true;
+        const r = await postJSON("/api/ground/release", { id: c.id, note: note.value });
+        rel.disabled = false;
+        if (!r.ok) return show(r.error);
+        show("Released. It is in the astronaut's Doctor notes now.", true);
+        editing = false; currentUpdated = r.case.updated; drawCase(r.case, defaultHidden, verdicts); loadList();
+      };
+      actions.appendChild(rel);
+      box.appendChild(actions);
+    }
+  } else if (c.status === "with_doctor" && !box.querySelector("h2")) {
+    box.appendChild(el("h2", null, "Waiting on the doctor"));
+  }
+  box.appendChild(msg);
+  return box;
+}
+
+function defaultRelease(c, verdicts) {
+  const r = c.review;
+  if (r.verdict === "agree") return `The doctor reviewed what VITALS told you and agrees.${r.note ? "\n\n" + r.note : ""}`;
+  if (r.verdict === "disagree") return `The doctor reviewed what VITALS told you and does NOT agree. Follow this instead:\n\n${r.note}`;
+  return `The doctor reviewed your case. Their advice:\n\n${r.note}`;
+}
+
+function profileBox(c) {
+  const box = el("section", "box no-print");
+  box.appendChild(el("h2", null, "Astronaut's details"));
+  if (c.crew.emergency) {
+    box.appendChild(el("p", "muted", "Emergency access - nobody logged in, so there is no account. Details typed here are kept on this case only."));
+  } else {
+    box.appendChild(el("p", "muted small", "Corrections are saved to this case and to the astronaut's account, so their own Profile tab shows them too."));
+  }
+  const rows = el("div");
+  const addRow = (k = "", v = "") => {
+    const r = el("div", "field-row");
+    const ki = el("input"); ki.type = "text"; ki.value = k; ki.placeholder = "Field (e.g. Allergies)"; ki.setAttribute("aria-label", "Field name");
+    const vi = el("input"); vi.type = "text"; vi.value = v; vi.placeholder = "Value"; vi.setAttribute("aria-label", "Value");
+    [ki, vi].forEach(i => { i.onfocus = () => editing = true; i.onblur = () => editing = false; });
+    const rm = el("button", "icon-btn", "x"); rm.type = "button"; rm.title = "Remove this field"; rm.setAttribute("aria-label", "Remove this field");
+    rm.onclick = () => r.remove();
+    r.appendChild(ki); r.appendChild(vi); r.appendChild(rm);
+    rows.appendChild(r);
+  };
+  Object.entries(c.crew.profile || {}).forEach(([k, v]) => addRow(k, v));
+  box.appendChild(rows);
+  const msg = el("div", "msg"); msg.hidden = true;
+  const actions = el("div", "actions");
+  const more = el("button", "btn", "Add a field"); more.type = "button"; more.onclick = () => addRow();
+  const save = el("button", "btn primary", "Save details"); save.type = "button";
+  save.onclick = async () => {
+    const profile = {};
+    rows.querySelectorAll(".field-row").forEach(r => {
+      const [k, v] = r.querySelectorAll("input");
+      if (k.value.trim()) profile[k.value.trim()] = v.value.trim();
+    });
+    save.disabled = true;
+    const r = await postJSON("/api/ground/profile", { id: c.id, profile });
+    save.disabled = false;
+    msg.hidden = false;
+    msg.className = "msg " + (r.ok ? "ok" : "err");
+    msg.textContent = r.ok ? "Saved." : r.error;
+    if (r.ok) { editing = false; currentUpdated = r.case.updated; }
+  };
+  actions.appendChild(more); actions.appendChild(save);
+  box.appendChild(actions); box.appendChild(msg);
+  return box;
+}
+
+function packetBox(packet) {
+  const box = el("section", "box printable");
+  box.appendChild(el("h2", null, "What the doctor sees"));
+  const p = drawPacket(packet.content);
+  box.appendChild(el("p", "small muted no-print",
+    `Sent ${when(packet.sent_at)} by ${packet.sent_by}. Withheld: ${packet.content.withheld.join(", ") || "nothing"}.`));
+  box.appendChild(p);
+  const actions = el("div", "actions no-print");
+  const print = el("button", "btn", "Print / save as PDF"); print.type = "button";
+  print.onclick = () => window.print();
+  actions.appendChild(print);
+  box.appendChild(actions);
+  return box;
+}
+
+// Shared shape with doctor.html: draws a redacted packet.
+function drawPacket(p) {
+  const box = el("div", "packet");
+  box.appendChild(el("p", "print-only", "VITALS case for doctor review - diagnosis + decision support. The doctor has the final say."));
+  box.appendChild(el("h3", null, "Crewmember"));
+  box.appendChild(el("p", null, p.crew_name || "Name withheld by ground crew"));
+  if (p.emergency_access) box.appendChild(el("p", "small", "Asked through emergency access (not logged in)."));
+  const prof = Object.entries(p.profile || {});
+  if (prof.length) {
+    const kv = el("dl", "kv");
+    prof.forEach(([k, v]) => { kv.appendChild(el("dt", null, k)); kv.appendChild(el("dd", null, v)); });
+    box.appendChild(kv);
+  }
+  if (p.withheld && p.withheld.length) box.appendChild(el("p", "small muted", `Withheld: ${p.withheld.join(", ")}`));
+  if (p.note_from_ground) { box.appendChild(el("h3", null, "Note from ground crew")); box.appendChild(el("p", null, p.note_from_ground)); }
+  if (p.transcript) {
+    box.appendChild(el("h3", null, "What the crewmember said"));
+    p.transcript.forEach(t => box.appendChild(el("p", null, `${when(t.at)}: ${t.text}`)));
+  }
+  if (p.vitals_answer) {
+    const v = p.vitals_answer;
+    box.appendChild(el("h3", null, "VITALS diagnosis and what else it considered"));
+    const row = el("p"); row.appendChild(levelChip(p.level));
+    if (v.escalate) row.appendChild(document.createTextNode("  Told to contact ground medical now"));
+    box.appendChild(row);
+    if (v.escalation_reason) box.appendChild(el("p", "small", `Why: ${v.escalation_reason}`));
+    v.differential.forEach((cnd, i) => {
+      const cb = el("div", "cond");
+      cb.appendChild(el("div", "nm", `${i === 0 ? (cnd.confidence === "low" ? "Possible diagnosis: " : "Diagnosis: ") : ""}${cnd.name} - ${STRENGTH_WORDS[cnd.confidence] || "Possible"} (${cnd.urgency})`));
+      if (cnd.reasoning) cb.appendChild(el("div", null, cnd.reasoning));
+      if (cnd.recommend && cnd.recommend.length) { const ul = el("ul"); cnd.recommend.forEach(r => ul.appendChild(el("li", "small", r))); cb.appendChild(ul); }
+      box.appendChild(cb);
+    });
+    if (!v.differential.length) box.appendChild(el("p", "muted", "Nothing in the knowledge base fit."));
+    if (v.uncertainty) box.appendChild(el("p", "small", `VITALS was least sure about: ${v.uncertainty}`));
+  }
+  if (p.understood) {
+    box.appendChild(el("h3", null, "What VITALS understood"));
+    box.appendChild(el("p", "small", p.understood.map(f => `${f.label}: ${f.value}`).join("; ") || "Nothing specific."));
+  }
+  return box;
+}
+
+loadMe();
+loadList();
+setInterval(loadList, REFRESH_SECONDS * 1000);
+resetIdle();
+</script>
+</body>
+</html>

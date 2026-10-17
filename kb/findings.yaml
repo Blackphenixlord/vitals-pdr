@@ -1,0 +1,686 @@
+# VITALS finding vocabulary
+# ----------------------
+# Every `finding:` id referenced by a condition file MUST exist here.
+# This is the controlled vocabulary. It stops two people writing
+# "headache" and "head_pain" and the engine treating them as different things.
+#
+# type:
+#   bool  -> present / absent / unknown
+#   scale -> 0-10 integer (pain, severity)
+#   num   -> a measured number (with `unit`)
+#   enum  -> one of `values`
+#
+# ask: the plain-English question the intake asks the crewmember.
+
+version: 1
+
+findings:
+
+  # --- General / constitutional ---
+  headache:
+    type: bool
+    label: Headache
+    ask: "Do you have a headache?"
+  headache_worse_lying_flat:
+    type: bool
+    label: Headache worse when supine or head-down
+    ask: "Is the headache worse when you are head-down or after sleep?"
+  fever:
+    type: num
+    unit: C
+    label: Body temperature
+    ask: "What is your temperature in Celsius?"
+    scoring: { direction: high, threshold: 38.0, span: 0.7 }
+  fatigue:
+    type: scale
+    label: Fatigue
+    ask: "Rate your fatigue 0-10."
+    scoring: { direction: high, threshold: 4, span: 3 }
+  malaise:
+    type: bool
+    label: General unwell feeling
+    ask: "Do you feel generally unwell / run down?"
+
+  # --- Neuro-ocular ---
+  blurred_near_vision:
+    type: bool
+    label: Blurred near vision
+    ask: "Is close-up reading harder than it was pre-flight?"
+  hyperopic_shift:
+    type: num
+    unit: diopters
+    label: Hyperopic refractive shift vs preflight
+    ask: "Refraction change from the preflight baseline, in diopters."
+    scoring: { direction: high, threshold: 0.5, span: 0.5 }
+  optic_disc_edema:
+    type: bool
+    label: Optic disc edema on fundoscopy/OCT
+    ask: "Does fundoscopy or OCT show optic disc swelling?"
+  choroidal_folds:
+    type: bool
+    label: Choroidal or retinal folds
+    ask: "Are choroidal/retinal folds visible on OCT?"
+  cotton_wool_spots:
+    type: bool
+    label: Cotton wool spots
+    ask: "Are cotton wool spots present on fundoscopy?"
+  globe_flattening:
+    type: bool
+    label: Posterior globe flattening
+    ask: "Does orbital ultrasound or MRI show posterior globe flattening?"
+  scotoma:
+    type: bool
+    label: Visual scotoma
+    ask: "Any blind spots or dark patches in your vision?"
+  diplopia:
+    type: bool
+    label: Double vision
+    ask: "Are you seeing double?"
+  pulsatile_tinnitus:
+    type: bool
+    label: Pulsatile tinnitus
+    ask: "Do you hear a rhythmic whooshing in your ears?"
+
+  # --- Vestibular ---
+  nausea:
+    type: scale
+    label: Nausea
+    ask: "Rate your nausea 0-10."
+    scoring: { direction: high, threshold: 4, span: 3 }
+  vomiting:
+    type: bool
+    label: Vomiting
+    ask: "Have you vomited?"
+  vertigo:
+    type: bool
+    label: Vertigo / spinning
+    ask: "Does the module feel like it is spinning or tumbling?"
+  symptoms_on_head_movement:
+    type: bool
+    label: Triggered by head movement
+    ask: "Do the symptoms get worse when you move your head?"
+  cold_sweat:
+    type: bool
+    label: Cold sweating / pallor
+    ask: "Are you sweating with pale, clammy skin?"
+  mission_elapsed_days:
+    type: num
+    unit: days
+    label: Mission elapsed time
+    ask: "How many days have you been on orbit?"
+    scoring: { direction: high, threshold: 14, span: 10 }
+    contextual: true      # background fact, not a symptom - cannot carry a diagnosis alone
+
+  # --- Renal ---
+  flank_pain:
+    type: scale
+    label: Flank pain
+    ask: "Rate the pain in your side/back 0-10."
+    scoring: { direction: high, threshold: 4, span: 3 }
+  pain_colicky:
+    type: bool
+    label: Pain comes in waves
+    ask: "Does the pain come and go in waves rather than staying steady?"
+  hematuria:
+    type: bool
+    label: Blood in urine
+    ask: "Is there blood in your urine (pink, red, or brown)?"
+  dysuria:
+    type: bool
+    label: Painful urination
+    ask: "Does it burn or hurt to urinate?"
+  urine_output_low:
+    type: bool
+    label: Reduced urine output
+    ask: "Has your urine output dropped noticeably?"
+  pain_radiates_groin:
+    type: bool
+    label: Pain radiating to groin
+    ask: "Does the pain travel down toward your groin?"
+
+  # --- Respiratory / ENT ---
+  nasal_congestion:
+    type: bool
+    label: Nasal congestion
+    ask: "Is your nose blocked or stuffy?"
+  facial_fullness:
+    type: bool
+    label: Facial fullness / puffiness
+    ask: "Does your face feel full or puffy?"
+  sore_throat:
+    type: bool
+    label: Sore throat
+    ask: "Is your throat sore?"
+  cough:
+    type: bool
+    label: Cough
+    ask: "Do you have a cough?"
+  purulent_discharge:
+    type: bool
+    label: Discolored nasal discharge
+    ask: "Is there thick yellow or green nasal discharge?"
+  congestion_since_arrival:
+    type: bool
+    label: Congestion present since arriving on orbit
+    ask: "Have you been congested more or less continuously since you got here?"
+  shortness_of_breath:
+    type: bool
+    label: Shortness of breath
+    ask: "Are you short of breath?"
+
+  # --- Cardiovascular ---
+  neck_swelling:
+    type: bool
+    label: Neck or facial swelling
+    ask: "Is one side of your neck or face swollen?"
+  jugular_distension:
+    type: bool
+    label: Distended jugular vein on ultrasound
+    ask: "Does ultrasound show a distended or non-compressible internal jugular vein?"
+  chest_pain:
+    type: bool
+    label: Chest pain
+    ask: "Do you have chest pain?"
+  limb_swelling_unilateral:
+    type: bool
+    label: One-sided limb swelling
+    ask: "Is one arm or leg swollen compared to the other?"
+  presyncope:
+    type: bool
+    label: Lightheaded / near-fainting
+    ask: "Do you feel like you are about to pass out?"
+  hr_elevated:
+    type: num
+    unit: bpm
+    label: Heart rate
+    ask: "What is the heart rate in beats per minute?"
+    scoring: { direction: high, threshold: 100, span: 20 }
+  recent_gravity_transition:
+    type: bool
+    label: Within 72h of landing or arrival
+    ask: "Has there been a gravity transition (launch/landing) in the last 3 days?"
+    contextual: true      # background fact, not a symptom
+
+  # --- Musculoskeletal ---
+  shoulder_pain:
+    type: scale
+    label: Shoulder pain
+    ask: "Rate the shoulder pain 0-10."
+    scoring: { direction: high, threshold: 4, span: 3 }
+  back_pain:
+    type: scale
+    label: Back pain
+    ask: "Rate the back pain 0-10."
+    scoring: { direction: high, threshold: 4, span: 3 }
+  pain_after_eva_training:
+    type: bool
+    label: Onset after EVA or suited work
+    ask: "Did it start during or after EVA / suited work?"
+  pain_after_exercise:
+    type: bool
+    label: Onset after resistive exercise
+    ask: "Did it start during or after ARED/resistive exercise?"
+  range_of_motion_limited:
+    type: bool
+    label: Limited range of motion
+    ask: "Is the joint's range of motion reduced?"
+  numbness_or_weakness:
+    type: bool
+    label: Numbness or weakness in a limb
+    ask: "Any numbness, tingling, or weakness in an arm or leg?"
+  height_increase:
+    type: bool
+    label: Measured height increase on orbit
+    ask: "Have you measured taller than your preflight height?"
+
+  # --- Sleep / psych ---
+  sleep_hours:
+    type: num
+    unit: hours
+    label: Sleep per 24h
+    ask: "How many hours are you actually sleeping per 24 hours?"
+    scoring: { direction: low, threshold: 6, span: 1.5 }
+  difficulty_falling_asleep:
+    type: bool
+    label: Difficulty falling asleep
+    ask: "Is it taking a long time to fall asleep?"
+  sleep_aid_use:
+    type: bool
+    label: Using sleep medication
+    ask: "Have you been taking a sleep aid?"
+  schedule_shifted:
+    type: bool
+    label: Recent sleep-shift or schedule slam
+    ask: "Has your sleep schedule been shifted for an operation recently?"
+  cognitive_slowing:
+    type: bool
+    label: Slowed reaction / poor concentration
+    ask: "Are you noticing slower reactions or trouble concentrating?"
+  irritability:
+    type: bool
+    label: Irritability / mood change
+    ask: "Any unusual irritability or mood change?"
+
+  # --- Decompression (EVA) ---
+  recent_decompression:
+    type: bool
+    label: EVA or airlock decompression in last 24h
+    ask: "Have you been on EVA or in a depressurized airlock in the last 24 hours?"
+    contextual: true      # background fact, not a symptom
+  joint_pain:
+    type: scale
+    label: Joint pain
+    ask: "Rate the joint pain 0-10. Which joint?"
+    scoring: { direction: high, threshold: 3, span: 3 }
+  skin_mottling:
+    type: bool
+    label: Blotchy or marbled skin rash
+    ask: "Any blotchy, marbled or mottled rash on your skin?"
+  confusion:
+    type: bool
+    label: Confusion or disorientation
+    ask: "Are you confused or disoriented?"
+  balance_impaired:
+    type: bool
+    label: Impaired balance or coordination
+    ask: "Is your balance or coordination off?"
+  relief_on_repressurization:
+    type: bool
+    label: Symptoms eased when pressure was raised
+    ask: "Did the symptoms ease once cabin pressure was raised?"
+  prebreathe_shortened:
+    type: bool
+    label: Prebreathe cut short or protocol deviated
+    ask: "Was the prebreathe protocol shortened or interrupted?"
+
+  # --- Dental ---
+  tooth_pain:
+    type: scale
+    label: Tooth pain
+    ask: "Rate the tooth pain 0-10."
+    scoring: { direction: high, threshold: 3, span: 3 }
+  pain_on_cold:
+    type: bool
+    label: Pain triggered by cold or hot
+    ask: "Does hot or cold food and drink set it off?"
+  pain_on_biting:
+    type: bool
+    label: Pain on biting or chewing
+    ask: "Does it hurt to bite down or chew?"
+  jaw_or_face_swelling:
+    type: bool
+    label: Swelling of the jaw, gum or cheek
+    ask: "Is the gum, jaw or cheek swollen?"
+  lost_filling_or_crown:
+    type: bool
+    label: Lost filling, crown or broken tooth
+    ask: "Has a filling or crown come out, or a tooth broken?"
+  pain_wakes_from_sleep:
+    type: bool
+    label: Pain severe enough to wake from sleep
+    ask: "Is the pain waking you from sleep?"
+
+  # --- Wounds / trauma ---
+  open_wound:
+    type: bool
+    label: Open wound present
+    ask: "Is there an open wound or cut?"
+  bleeding_uncontrolled:
+    type: bool
+    label: Bleeding not stopping with pressure
+    ask: "Is it still bleeding after several minutes of firm pressure?"
+  wound_gaping:
+    type: bool
+    label: Wound edges will not stay closed
+    ask: "Do the edges of the cut fall open when you let go?"
+  foreign_body:
+    type: bool
+    label: Foreign material in the wound
+    ask: "Is there anything stuck in the wound - metal, glass, debris?"
+  wound_spreading_redness:
+    type: bool
+    label: Spreading redness, warmth or pus
+    ask: "Is redness spreading out from the wound, or is there pus?"
+  tetanus_status_unknown:
+    type: bool
+    label: Tetanus immunization status unknown or out of date
+    ask: "Is the tetanus immunization current?"
+
+  # --- added 2 Oct 2026: general conditions from NASA's IMM baselines --------
+  # Eye, skin, urinary, gut, allergy, heart, head injury, burns, toxic air.
+
+  # eye
+  eye_pain:
+    type: bool
+    label: Eye pain
+    ask: "Does your eye hurt?"
+  eye_redness:
+    type: bool
+    label: Red eye
+    ask: "Is the eye red?"
+  eye_foreign_body_sensation:
+    type: bool
+    label: Feels like something is in the eye
+    ask: "Does it feel like there is something in your eye - grit, a speck, an eyelash?"
+  eye_watering:
+    type: bool
+    label: Watering eye
+    ask: "Is the eye watering more than usual?"
+  light_sensitivity:
+    type: bool
+    label: Light hurts the eye
+    ask: "Does bright light hurt the eye?"
+  vision_loss_sudden:
+    type: bool
+    label: Sudden loss of vision
+    ask: "Have you suddenly lost vision, or part of your vision, in that eye?"
+  chemical_in_eye:
+    type: bool
+    label: Chemical splashed in the eye
+    ask: "Did any chemical, fluid or cleaning agent get into the eye?"
+
+  # skin
+  rash:
+    type: bool
+    label: Skin rash
+    ask: "Do you have a rash anywhere on your skin?"
+  itching:
+    type: bool
+    label: Itching
+    ask: "Is it itchy?"
+  rash_spreading:
+    type: bool
+    label: Rash is spreading
+    ask: "Is the rash spreading or getting bigger?"
+  rash_where_skin_rubs:
+    type: bool
+    label: Rash where clothing or equipment rubs or stays damp
+    ask: "Is the rash where clothing, straps or a garment rub, or where sweat stays on the skin?"
+  blistering:
+    type: bool
+    label: Blisters
+    ask: "Are there blisters?"
+
+  # urinary
+  urinary_frequency:
+    type: bool
+    label: Needing to urinate often
+    ask: "Do you need to urinate much more often than usual?"
+  urinary_urgency:
+    type: bool
+    label: Sudden urgent need to urinate
+    ask: "Do you get a sudden, urgent need to urinate?"
+  suprapubic_pain:
+    type: bool
+    label: Pain low in the belly, above the pubic bone
+    ask: "Do you have pain or pressure low in your belly, just above the pubic bone?"
+
+  # gut
+  diarrhea:
+    type: bool
+    label: Diarrhea
+    ask: "Do you have loose or watery stools?"
+  abdominal_cramping:
+    type: bool
+    label: Belly cramps
+    ask: "Do you have cramping pain in your belly?"
+  blood_in_stool:
+    type: bool
+    label: Blood in stool
+    ask: "Have you seen blood in your stool, or black tar-like stool?"
+  no_bowel_movement:
+    type: bool
+    label: Constipated - no or hard bowel movements
+    ask: "Have you been unable to have a bowel movement, or are they hard and difficult?"
+  bloating:
+    type: bool
+    label: Bloated belly
+    ask: "Does your belly feel bloated or full of gas?"
+  abdominal_pain_rlq:
+    type: bool
+    label: Pain in the lower right belly
+    ask: "Is the pain in the lower right part of your belly?"
+  pain_moved_to_rlq:
+    type: bool
+    label: Pain started near the belly button and moved to the lower right
+    ask: "Did the pain start around your belly button and then move to the lower right?"
+  loss_of_appetite:
+    type: bool
+    label: Loss of appetite
+    ask: "Have you lost your appetite?"
+  pain_worse_on_movement:
+    type: bool
+    label: Belly pain worse with coughing, bumps or movement
+    ask: "Does the belly pain get worse when you cough, move or bump into something?"
+  others_affected:
+    type: bool
+    label: Other crewmembers have the same symptoms
+    ask: "Does anyone else on board have the same symptoms?"
+    contextual: true      # a fact about the vehicle, not about this person
+
+  # allergy
+  hives:
+    type: bool
+    label: Hives (raised itchy welts)
+    ask: "Do you have hives - raised, itchy welts on the skin?"
+  sneezing:
+    type: bool
+    label: Sneezing
+    ask: "Are you sneezing a lot?"
+  lip_or_tongue_swelling:
+    type: bool
+    label: Swelling of the lips, tongue or face
+    ask: "Are your lips, tongue or face swelling?"
+  throat_tightness:
+    type: bool
+    label: Throat feels tight or closing
+    ask: "Does your throat feel tight, or like it is closing?"
+  wheezing:
+    type: bool
+    label: Wheezing
+    ask: "Are you wheezing - a whistling sound when you breathe?"
+  new_medication_or_exposure:
+    type: bool
+    label: New medication, food or substance shortly before
+    ask: "Did you take a new medication, eat something new, or touch a new substance shortly before this started?"
+    contextual: true      # a cause, not a symptom
+
+  # heart
+  pain_radiates_arm_jaw:
+    type: bool
+    label: Chest pain spreading to the arm, jaw, neck or back
+    ask: "Does the chest pain spread to your arm, jaw, neck or back?"
+  chest_pain_on_exertion:
+    type: bool
+    label: Chest pain brought on by exercise or effort
+    ask: "Did the chest pain start during exercise or effort?"
+  palpitations:
+    type: bool
+    label: Racing or irregular heartbeat
+    ask: "Do you feel your heart racing, pounding or skipping?"
+  pain_worse_on_breathing:
+    type: bool
+    label: Chest pain sharper on a deep breath
+    ask: "Is the chest pain sharper when you take a deep breath?"
+  chest_tender_to_touch:
+    type: bool
+    label: Chest wall sore to press on
+    ask: "If you press on the sore spot of your chest, does that reproduce the pain?"
+
+  # head injury
+  head_strike:
+    type: bool
+    label: Hit the head
+    ask: "Did you hit your head?"
+  loss_of_consciousness:
+    type: bool
+    label: Knocked out or blacked out
+    ask: "Were you knocked out or did you black out, even for a moment?"
+  memory_gap:
+    type: bool
+    label: Cannot remember what happened
+    ask: "Is there a gap in your memory around what happened?"
+
+  # burns
+  burn_injury:
+    type: bool
+    label: Burn
+    ask: "Is there a burn on your skin?"
+  burn_large_area:
+    type: bool
+    label: Burn larger than the palm of the hand
+    ask: "Is the burned area bigger than the palm of your hand?"
+  burn_face_or_airway:
+    type: bool
+    label: Burn on the face, or hoarse voice after a fire
+    ask: "Is the burn on your face, or is your voice hoarse, or did you breathe in smoke or heat?"
+
+  # toxic air
+  chemical_exposure:
+    type: bool
+    label: Smoke, fumes or a chemical smell or leak
+    ask: "Was there smoke, fumes, a chemical smell, a leak or an air-quality alarm?"
+    contextual: true      # an event in the cabin; symptoms must come with it
+  throat_burning:
+    type: bool
+    label: Burning in the nose or throat
+    ask: "Does your nose or throat burn?"
+
+  # --- added 3 Oct 2026: everyday "family doctor" conditions ------------------
+  # nose, ear, sinus, eye infection, heartburn, sprains, mouth sores,
+  # shingles, irregular heartbeat. All from NASA IMM CliFF baselines.
+
+  # nose
+  nosebleed:
+    type: bool
+    label: Nosebleed
+    ask: "Is your nose bleeding?"
+  bleeding_down_throat:
+    type: bool
+    label: Blood running down the back of the throat
+    ask: "Can you feel or taste blood running down the back of your throat?"
+  nose_dry_or_picked:
+    type: bool
+    label: Dry, irritated nose, or picking or hard nose-blowing
+    ask: "Has your nose been very dry, or have you been picking it or blowing it hard?"
+
+  # ear
+  ear_pain:
+    type: bool
+    label: Ear pain
+    ask: "Does your ear hurt?"
+  ear_discharge:
+    type: bool
+    label: Fluid or pus coming out of the ear
+    ask: "Is any fluid or pus coming out of your ear?"
+  hearing_reduced:
+    type: bool
+    label: Hearing reduced or muffled
+    ask: "Is your hearing muffled or reduced on that side?"
+  ear_pain_on_tugging:
+    type: bool
+    label: Ear hurts more when the outer ear is pulled or pressed
+    ask: "Does it hurt more when you gently pull your earlobe or press on the flap in front of the ear?"
+
+  # sinus
+  facial_pain_pressure:
+    type: bool
+    label: Pain or pressure over the cheeks, forehead or around the eyes
+    ask: "Do you have pain or pressure over your cheeks, forehead or around your eyes?"
+  symptoms_over_10_days:
+    type: bool
+    label: Symptoms lasting more than 10 days
+    ask: "Have these symptoms lasted more than 10 days?"
+    contextual: true      # a time course, not a symptom - it cannot carry a diagnosis alone
+  worse_after_improving:
+    type: bool
+    label: Got better, then got worse again
+    ask: "Did you start getting better and then get worse again?"
+
+  # eye infection
+  eye_discharge:
+    type: bool
+    label: Sticky or crusty discharge from the eye
+    ask: "Is there sticky or crusty discharge from the eye, or is it stuck shut when you wake up?"
+  eyelid_lump_or_swelling:
+    type: bool
+    label: Lump, bump or swelling on the eyelid
+    ask: "Is there a lump, bump or swelling on your eyelid?"
+
+  # heartburn / indigestion
+  heartburn:
+    type: bool
+    label: Burning feeling behind the breastbone (heartburn)
+    ask: "Do you have a burning feeling behind your breastbone, like heartburn?"
+  sour_taste_regurgitation:
+    type: bool
+    label: Sour taste or food coming back up
+    ask: "Do you get a sour or acid taste, or food or liquid coming back up into your mouth?"
+  upper_abdominal_pain:
+    type: bool
+    label: Pain in the upper middle of the belly
+    ask: "Is the pain in the upper middle of your belly, just below the ribs?"
+  worse_after_eating:
+    type: bool
+    label: Worse after eating or after lying down
+    ask: "Is it worse after you eat or when you lie flat in your sleep station?"
+  relieved_by_antacid:
+    type: bool
+    label: Antacid helps
+    ask: "Did an antacid make it better?"
+  vomiting_blood:
+    type: bool
+    label: Vomiting blood or material like coffee grounds
+    ask: "Have you vomited blood, or anything that looks like coffee grounds?"
+
+  # sprains and strains
+  limb_injury_event:
+    type: bool
+    label: Twisted, rolled, jammed or hit an arm or leg
+    ask: "Did you twist, roll, jam or hit the joint or limb?"
+  joint_swelling:
+    type: bool
+    label: Swelling around a joint
+    ask: "Is there swelling around the joint?"
+  bruising:
+    type: bool
+    label: Bruising
+    ask: "Is there bruising?"
+  cannot_use_limb:
+    type: bool
+    label: Cannot use the limb or put load on it
+    ask: "Are you unable to use it, grip with it, or push off with it at all?"
+  limb_deformity:
+    type: bool
+    label: Limb or joint looks bent or out of place
+    ask: "Does the joint or bone look bent, crooked or out of place?"
+
+  # mouth
+  mouth_sore:
+    type: bool
+    label: Painful sore or ulcer inside the mouth
+    ask: "Do you have a painful sore or ulcer inside your mouth?"
+  cold_sore_lip:
+    type: bool
+    label: Blister or cold sore on the lip
+    ask: "Is there a blister or cold sore on your lip?"
+
+  # shingles
+  rash_one_side_band:
+    type: bool
+    label: Rash in a strip or band on one side of the body
+    ask: "Is the rash in a strip or band on only one side of your body?"
+  skin_pain_before_rash:
+    type: bool
+    label: Burning, tingling or pain in the skin before any rash
+    ask: "Did that patch of skin burn, tingle or hurt before you saw a rash?"
+  rash_near_eye:
+    type: bool
+    label: Rash on the forehead, near the eye, or on the tip of the nose
+    ask: "Is the rash on your forehead, around the eye, or on the tip of your nose?"
+
+  # irregular heartbeat
+  irregular_heartbeat:
+    type: bool
+    label: Heartbeat feels irregular
+    ask: "Does your heartbeat feel irregular - skipping, fluttering, or out of rhythm?"

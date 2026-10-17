@@ -1,0 +1,14 @@
+title: "FD 90 - red crusty eye, crewmate has the same"
+narrative: >
+  Woke up with my eye crusted shut, it's red and itchy. The commander's eye
+  looks the same. No pain, light doesn't bother me, nothing got in it.
+expect_top: eye_infection
+observations:
+  eye_discharge: true
+  eye_redness: true
+  itching: true
+  others_affected: true
+  eye_pain: false
+  light_sensitivity: false
+  eye_foreign_body_sensation: false
+  mission_elapsed_days: 90

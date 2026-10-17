@@ -1,0 +1,1175 @@
+<!doctype html>
+<!--
+  VITALS - astronaut screen (AUI).
+  Idea from Cruz's Figma mockups (Oct 2026), not a copy of them: an icon rail
+  on the left that opens a side panel, the chat on the right. Restyled so every
+  part shares one look - one navy palette, one line-icon style, one card style.
+
+  THE RAIL (icons, top to bottom) - tap one to open its panel, tap it again to close
+    Chats         new chat + this session's earlier chats
+    Profile       the logged-in crewmember's details, from their account
+    Vitals        sensor readings. None are connected, so it says so.
+    Doctor notes  a doctor's feedback on what VITALS told you, shown once
+                  ground crew has verified it. None yet.
+                  (Not a camera. A camera tab may come later.)
+    Supplies      reserved for the medical kit list. Not connected.
+    Lock          at the bottom
+
+  RULES THIS PAGE FOLLOWS (from UI_ACCEPTANCE_CRITERIA.md)
+    - It renders what the server sends. Conditions, reasons, advice and sources
+      all come from the engine; none of that wording is typed in here.
+    - The escalation level is always a WORD plus a color, never color alone.
+    - No percentages anywhere. Confidence is shown as words.
+    - No made-up vital signs: every slot shows "--" and "No sensor" until
+      real hardware exists.
+    - Server errors are shown exactly as the server wrote them.
+    - Works offline: one file, nothing loaded from the internet. The fonts are
+      ones already on the machine (Bahnschrift ships with Windows).
+
+  WHO IS LOGGED IN
+    The server knows, through an HttpOnly cookie. This page asks /api/me and
+    sends you back to the login screen if nobody is.
+
+  CHAT HISTORY
+    Earlier chats are listed in this page only, for this login. But every
+    medical answer is ALSO saved on the Jetson as a case (the reply carries a
+    case_id), so the ground crew sees it even after this screen is locked.
+
+  DOCTOR NOTES
+    Fetched from /api/my/notes every 20 s. A dot on the rail icon marks a new one.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VITALS - astronaut</title>
+<style>
+  /* ==== tokens - shared with login.html ===================================
+     Every text color passes 4.5:1 contrast on the surface it sits on. */
+  :root {
+    --bg:        #14172e;   /* cabin night: the chat area */
+    --surface:   #1c2042;   /* rail, panel, top bar */
+    --raised:    #272c57;   /* bubbles, cards, fields */
+    --raised-2:  #323870;   /* hover / selected */
+    --line:      #3a4078;
+    --ink:       #eef0fb;
+    --muted:     #aab0dc;
+    --signal:    #8cc8ff;   /* the one accent: focus, links, active tab */
+    --signal-ink:#0b1830;
+    --pulse:     #e5484d;   /* the emblem's red - emergency only */
+    --error-bg:  #3d1f2a;
+    --error-ink: #ffb8b8;
+
+    /* escalation levels: background + text color for each */
+    --emergency-bg: #d7262b; --emergency-ink: #ffffff;
+    --urgent-bg:    #f28b00; --urgent-ink:    #14100a;
+    --monitor-bg:   #fdd663; --monitor-ink:   #14100a;
+    --routine-bg:   #81c995; --routine-ink:   #0b1a10;
+    --none-bg:      #6c7090; --none-ink:      #ffffff;
+
+    --display: Bahnschrift, "DIN Alternate", "Barlow", "Roboto Condensed", system-ui, sans-serif;
+    --body: "Segoe UI", system-ui, Roboto, "Helvetica Neue", sans-serif;
+    --r-sm: 8px; --r-md: 14px; --r-lg: 20px;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.55 var(--body);     /* readable at arm's length */
+  }
+  a { color: var(--signal); text-underline-offset: 3px; }
+  button { font: inherit; cursor: pointer; color: inherit; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+  .icon { width: 26px; height: 26px; display: block; }
+
+  /* ==== layout: rail | panel | chat ====================================== */
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  .rail {
+    flex: 0 0 72px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 0;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+  }
+  .rail .mark { width: 40px; height: 40px; margin-bottom: 14px; }
+  .rail button {
+    position: relative;
+    width: 52px; height: 52px;                   /* tap targets: 44px minimum */
+    display: grid; place-items: center;
+    border: 0; border-radius: var(--r-md); background: transparent; color: var(--muted);
+  }
+  .rail button:hover { background: var(--raised); color: var(--ink); }
+  .rail button[aria-pressed="true"] { background: var(--raised-2); color: var(--signal); }
+  .rail button[aria-pressed="true"]::before {
+    content: ""; position: absolute; left: -10px; top: 12px; bottom: 12px;
+    width: 4px; border-radius: 0 4px 4px 0; background: var(--signal);
+  }
+  .rail .lock { margin-top: auto; }
+  /* a new doctor note: dot on the rail icon (with a label for screen readers) */
+  .rail button .dot {
+    position: absolute; top: 9px; right: 9px; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--monitor-bg); box-shadow: 0 0 0 2px var(--surface);
+  }
+  .note-card .when { color: var(--muted); font-size: 14px; margin: 0 0 6px; }
+  .note-card .verdict {
+    display: inline-block; margin: 0 0 8px; padding: 2px 10px; border-radius: 999px;
+    background: var(--raised-2); color: var(--ink); font-size: 14px; font-weight: 600;
+  }
+  .note-card .message { white-space: pre-wrap; }
+  .note-card.new { box-shadow: inset 4px 0 0 var(--monitor-bg); }
+
+  .panel {
+    flex: 0 0 340px; width: 340px; min-width: 0;
+    display: flex; flex-direction: column;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+  }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 14px 10px 22px;
+  }
+  .panel-head h2 { margin: 0; font: 600 22px/1.2 var(--display); letter-spacing: .3px; }
+  .panel-head button {
+    width: 44px; height: 44px; border: 0; border-radius: var(--r-sm);
+    background: transparent; color: var(--muted); display: grid; place-items: center;
+  }
+  .panel-head button:hover { background: var(--raised); color: var(--ink); }
+  .panel-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 22px 22px; }
+  .panel .note { color: var(--muted); font-size: 15px; }
+
+  /* Narrow screens: the panel floats over the chat instead of pushing it. */
+  @media (max-width: 760px) {
+    .rail { flex-basis: 64px; }
+    .panel { position: fixed; z-index: 5; inset: 0 auto 0 64px; width: min(340px, calc(100vw - 64px));
+             box-shadow: 8px 0 30px #0009; }
+  }
+
+  /* ---- shared panel pieces ---- */
+  .card { padding: 16px 18px; border-radius: var(--r-md); background: var(--raised); }
+  .card + .card { margin-top: 12px; }
+  .card h3 { margin: 0 0 6px; font: 600 18px/1.3 var(--display); }
+  .card p { margin: 0 0 8px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* chats */
+  .new-chat {
+    width: 100%; min-height: 48px; margin-bottom: 16px;
+    border: 0; border-radius: var(--r-md);
+    background: var(--signal); color: var(--signal-ink); font-weight: 650;
+  }
+  .new-chat:hover { filter: brightness(1.08); }
+  .pill {
+    display: block; width: 100%; min-height: 48px; margin-bottom: 8px; padding: 10px 14px;
+    border: 1px solid transparent; border-radius: var(--r-md); background: var(--raised);
+    text-align: left; font-size: 15px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pill:hover { background: var(--raised-2); }
+  .pill.current { border-color: var(--signal); }
+
+  /* profile */
+  .who { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .avatar {
+    flex: none; width: 56px; height: 56px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--raised-2); color: var(--signal); font: 600 22px var(--display);
+  }
+  .who .role { margin: 0; color: var(--muted); font-size: 14px; }
+  .who h3 { margin: 0; font: 600 22px/1.2 var(--display); }
+  .facts { margin: 0; }
+  .facts div { display: flex; justify-content: space-between; gap: 12px;
+               padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .facts div:last-child { border-bottom: 0; }
+  .facts dt { color: var(--muted); }
+  .facts dd { margin: 0; text-align: right; }
+  .lock-wide {
+    width: 100%; min-height: 48px; margin-top: 16px;
+    border: 1px solid var(--line); border-radius: var(--r-md); background: transparent;
+  }
+  .lock-wide:hover { background: var(--raised); }
+
+  /* vitals: instrument readouts, every one empty until hardware exists */
+  .status { margin: 0 0 12px; color: var(--muted); font-size: 15px; }
+  .channel {
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0 12px;
+    padding: 12px 16px; margin-bottom: 8px; border-radius: var(--r-md); background: var(--raised);
+    border-left: 4px solid var(--tick, var(--line));
+  }
+  .channel .label { font-weight: 600; font-size: 15px; }
+  .channel .why { color: var(--muted); font-size: 14px; }
+  .channel .value { grid-column: 2; grid-row: 1 / 3; font: 600 30px/1 var(--display); color: var(--muted); }
+
+  /* supplies */
+  .empty-state { text-align: left; }
+
+  /* ==== chat ============================================================== */
+  main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    min-height: 64px; padding: 10px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar .title { font: 600 20px/1.2 var(--display); letter-spacing: 2px; }
+  .topbar .sub { color: var(--muted); font-size: 14px; }
+  .topbar .crew { color: var(--muted); font-size: 15px; text-align: right; }
+  .topbar .crew b { color: var(--ink); font-weight: 600; }
+
+  .notice {
+    margin: 16px 32px 0; padding: 12px 16px; border-radius: var(--r-md);
+    background: var(--error-bg); color: var(--error-ink); font-size: 15px;
+    border-left: 4px solid var(--pulse);
+  }
+  .log { flex: 1; min-height: 0; overflow-y: auto; padding: 28px 32px; position: relative; }
+  .log > * { max-width: 760px; }
+
+  .empty-hint { padding: 22px 24px; border-radius: var(--r-lg); background: var(--surface);
+                border: 1px solid var(--line); }
+  .empty-hint b { display: block; margin-bottom: 6px; font: 600 22px/1.2 var(--display); }
+  .empty-hint p { margin: 0; color: var(--muted); }
+
+  /* crew bubbles on the right, VITALS on the left */
+  .bubble {
+    width: fit-content; max-width: min(560px, 80%); margin: 16px 0 16px auto; padding: 12px 18px;
+    border-radius: var(--r-lg) var(--r-lg) 6px var(--r-lg);
+    background: var(--raised-2); white-space: pre-wrap;
+  }
+  .log > .bubble { margin-left: auto; margin-right: 0; }
+  .log > .bubble.vitals {
+    margin-left: 0; margin-right: auto;
+    border-radius: var(--r-lg) var(--r-lg) var(--r-lg) 6px;
+    background: var(--surface); border: 1px solid var(--line);
+  }
+  .bubble .label { display: block; font-size: 13px; color: var(--muted); }
+
+  .composer { padding: 8px 32px 22px; }
+  .asking { max-width: 760px; margin: 0 0 10px; font-size: 18px; }
+  .asking b { color: var(--signal); font-weight: 650; }
+  .bar-row {
+    max-width: 760px;
+    display: flex; align-items: flex-end; gap: 8px;
+    padding: 6px 6px 6px 18px; border-radius: var(--r-lg);
+    background: var(--raised); border: 1px solid var(--line);
+  }
+  .bar-row:focus-within { border-color: var(--signal); outline: 2px solid var(--signal); }
+  .bar-row textarea {
+    flex: 1; min-height: 44px; max-height: 160px; resize: none;
+    padding: 10px 0; border: 0; background: transparent; color: var(--ink);
+    font: inherit; outline: none;
+  }
+  .bar-row textarea::placeholder { color: var(--muted); }
+  .send {
+    width: 48px; height: 48px; flex: none; border: 0; border-radius: var(--r-md);
+    background: var(--signal); color: var(--signal-ink);
+    display: grid; place-items: center;
+  }
+  .send:not(:disabled):hover { filter: brightness(1.08); }
+  .send .icon { width: 22px; height: 22px; }
+
+  /* ---- "VITALS is thinking" ---- */
+  .working { display: flex; align-items: center; gap: 12px; color: var(--muted); margin: 16px 0; }
+  .spinner {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 3px solid var(--line); border-top-color: var(--signal);
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+
+  /* ---- the answer ----
+     The level is drawn like a spacecraft caution-and-warning light: a framed
+     tile with the word in instrument type. It is the first thing on the card. */
+  .answer {
+    margin: 16px 0 26px; border-radius: var(--r-lg); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--line);
+  }
+  .level {
+    display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .level .word {
+    grid-row: 1 / 3;
+    min-width: 150px; padding: 10px 16px;
+    border-radius: var(--r-sm);
+    background: var(--tile); color: var(--tile-ink);
+    box-shadow: inset 0 0 0 2px #0000002e, 0 0 0 3px var(--band, var(--surface)), 0 0 0 5px var(--tile);
+    font: 700 24px/1 var(--display); letter-spacing: 2px; text-align: center;
+  }
+  .level .escalate { font: 600 19px/1.3 var(--display); }
+  .level .reason { color: var(--muted); font-size: 15px; }
+  .level.emergency { --tile: var(--emergency-bg); --tile-ink: var(--emergency-ink); --band: #3a1820; background: var(--band); }
+  .level.urgent    { --tile: var(--urgent-bg);    --tile-ink: var(--urgent-ink); }
+  .level.monitor   { --tile: var(--monitor-bg);   --tile-ink: var(--monitor-ink); }
+  .level.routine   { --tile: var(--routine-bg);   --tile-ink: var(--routine-ink); }
+  .level.none      { --tile: var(--none-bg);      --tile-ink: var(--none-ink); }
+  .level.emergency .word::before { content: "!! "; }
+  .level.emergency .escalate { color: #ffd0d0; }
+  .level.emergency .reason { color: #f2c4c4; }
+
+  .answer-body { padding: 16px 20px 18px; }
+  .answer h3 { margin: 20px 0 6px; font: 600 17px/1.3 var(--display); color: var(--signal); }
+  .answer h3:first-child { margin-top: 0; }
+  .answer ul { margin: 4px 0; padding-left: 22px; }
+  .answer li { margin: 3px 0; }
+
+  /* the diagnosis: the headline answer, before the other possibilities */
+  .diagnosis {
+    margin: 0 0 8px; padding: 14px 16px; border-radius: var(--r-md);
+    background: var(--raised); border-left: 4px solid var(--signal);
+  }
+  .diagnosis .dx-label { font: 600 14px/1.2 var(--display); letter-spacing: 1.5px; text-transform: uppercase; color: var(--signal); }
+  .diagnosis .dx-name  { margin: 4px 0 2px; font: 600 26px/1.2 var(--display); }
+  .diagnosis .dx-meta  { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
+  .diagnosis .dx-sure  { color: var(--ink); font-weight: 650; }
+  .diagnosis .flag {
+    display: inline-block; margin-bottom: 6px; font-size: 13px; font-weight: 700; padding: 2px 10px;
+    border-radius: 999px; background: var(--emergency-bg); color: var(--emergency-ink);
+  }
+  .diagnosis .why { margin: 4px 0 6px; }
+  .diagnosis .source { font-size: 15px; }
+  .diagnosis .dx-note { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+
+  .condition { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .condition:last-child { border-bottom: 0; }
+  .condition .head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+  .condition .name { font-size: 18px; font-weight: 650; }
+  .condition .strength { font-size: 14px; color: var(--muted); }
+  .condition .flag {
+    font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 999px;
+    background: var(--emergency-bg); color: var(--emergency-ink);
+  }
+  .condition .why { margin: 4px 0; }
+  .condition .source { font-size: 15px; }
+  .condition .no-source { color: var(--error-ink); font-size: 15px; }
+
+  details.known { margin-top: 14px; border-top: 1px solid var(--line); }
+  details.known summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; color: var(--muted); }
+  details.known summary:hover { color: var(--ink); }
+  .known-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 6px 0; border-bottom: 1px solid var(--line);
+  }
+  .known-row .fix {
+    min-height: 44px; min-width: 88px; border: 1px solid var(--line);
+    border-radius: var(--r-sm); background: var(--raised); color: var(--ink);
+  }
+  .known-row .fix:hover { border-color: var(--signal); }
+  .corrected { color: var(--muted); font-size: 14px; }
+
+  .error-card { margin: 16px 0; padding: 16px 20px; border-radius: var(--r-lg);
+                background: var(--error-bg); border-left: 4px solid var(--pulse); }
+  .error-card b { display: block; color: var(--error-ink); margin-bottom: 6px; }
+  .error-card pre { margin: 0; white-space: pre-wrap; font: 15px/1.5 ui-monospace, Consolas, monospace; }
+</style>
+</head>
+<body>
+
+<!-- ==== icons: one line style, drawn once and reused ===================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-chats" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></g></symbol>
+  <symbol id="i-profile" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></g></symbol>
+  <symbol id="i-vitals" viewBox="0 0 24 24"><path d="M2 12.5h4.5l2.5-6 4 12 3-8 2 2H22" fill="none" stroke="currentColor"
+    stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+  <symbol id="i-notes" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M12.5 10v6M9.5 13h6"/></g></symbol>
+  <symbol id="i-supplies" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4.5h6V7M12 10.5v6M9 13.5h6"/></g></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></g></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <!-- the VITALS mark, small: the emblem's orbit and pulse -->
+  <symbol id="i-mark" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="19" fill="#2c3890"/>
+    <ellipse cx="20" cy="20" rx="16" ry="6" fill="none" stroke="#fff" stroke-width="1.2" transform="rotate(-24 20 20)"/>
+    <path d="M3 22h9l2-4 2.5 8.5 3-14 2.5 10 1.5-2.5H37" fill="none" stroke="#e5484d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div class="app">
+
+  <!-- ==== the rail: always there ========================================= -->
+  <nav class="rail" id="rail" aria-label="Sections">
+    <svg class="mark" role="img" aria-label="VITALS"><use href="#i-mark"/></svg>
+    <button data-section="chats"    aria-pressed="false" title="Chats"        aria-label="Chats"><svg class="icon"><use href="#i-chats"/></svg></button>
+    <button data-section="profile"  aria-pressed="false" title="Profile"      aria-label="Profile"><svg class="icon"><use href="#i-profile"/></svg></button>
+    <button data-section="vitals"   aria-pressed="false" title="Vitals"       aria-label="Vitals"><svg class="icon"><use href="#i-vitals"/></svg></button>
+    <button data-section="notes"    aria-pressed="false" title="Doctor notes" aria-label="Doctor notes"><svg class="icon"><use href="#i-notes"/></svg></button>
+    <button data-section="supplies" aria-pressed="false" title="Supplies"     aria-label="Supplies"><svg class="icon"><use href="#i-supplies"/></svg></button>
+    <button class="lock" id="lock-rail" title="Lock screen" aria-label="Lock screen"><svg class="icon"><use href="#i-lock"/></svg></button>
+  </nav>
+
+  <!-- ==== the panel: opens beside the rail =============================== -->
+  <aside class="panel" id="drawer" hidden>
+    <div class="panel-head">
+      <h2 id="panel-title">Chats</h2>
+      <button id="close-drawer" title="Close the panel" aria-label="Close the panel"><svg class="icon"><use href="#i-close"/></svg></button>
+    </div>
+
+    <div class="panel-body">
+      <!-- chats -->
+      <section data-panel="chats" data-title="Chats">
+        <button class="new-chat" id="new-chat">New chat</button>
+        <div id="chat-list"></div>
+        <p class="note">Earlier chats stay here until you lock the screen.</p>
+      </section>
+
+      <!-- profile -->
+      <section data-panel="profile" data-title="Profile" hidden>
+        <div id="profile-body"></div>
+        <button class="lock-wide" id="lock">Lock screen</button>
+      </section>
+
+      <!-- vitals -->
+      <section data-panel="vitals" data-title="Vitals" hidden>
+        <p class="status" id="sensor-note">Checking sensors…</p>
+        <div id="sensor-slots"></div>
+      </section>
+
+      <!-- doctor notes: a doctor's feedback on what VITALS said. Not a camera. -->
+      <section data-panel="notes" data-title="Doctor notes" hidden>
+        <div id="notes-list"></div>
+        <div class="card" id="notes-empty">
+          <h3>No doctor notes yet</h3>
+          <p>A doctor reviews what VITALS told you about a case and says whether they
+             agree, disagree, or would do something different. Their feedback shows up
+             here after the ground crew checks it.</p>
+        </div>
+        <div class="card" id="notes-until">
+          <p>Until then, follow what VITALS told you in the chat, and call the
+             ground crew if anything gets worse.</p>
+        </div>
+      </section>
+
+      <!-- supplies -->
+      <section data-panel="supplies" data-title="Medical supplies" hidden>
+        <div class="card empty-state">
+          <h3>No supply list connected</h3>
+          <p>The medical kit list will show here, with what is on board and how much is left.</p>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- ==== chat =========================================================== -->
+  <main>
+    <header class="topbar">
+      <div>
+        <div class="title">VITALS</div>
+        <div class="sub">Diagnosis + decision support · a doctor has the final say</div>
+      </div>
+      <div class="crew" id="crew-line"></div>
+    </header>
+
+    <div class="notice" id="emergency-notice" hidden>
+      Emergency access: you are not logged in. The ground crew will see this
+      case as emergency access.
+    </div>
+
+    <div class="log" id="log" aria-live="polite">
+      <div class="empty-hint" id="empty-hint">
+        <b>How are you feeling?</b>
+        <p>Tell VITALS in your own words, and say the flight day if you know it.
+           It will ask follow-up questions one at a time.</p>
+      </div>
+    </div>
+
+    <form class="composer" id="composer">
+      <p class="asking" id="asking" hidden><b>VITALS asks:</b> <span id="asking-text"></span></p>
+      <div class="bar-row">
+        <label for="message" hidden>Your message</label>
+        <textarea id="message" rows="1" placeholder="Describe what you feel"></textarea>
+        <button class="send" id="send" type="submit" title="Send" aria-label="Send"><svg class="icon"><use href="#i-send"/></svg></button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script>
+/* ==========================================================================
+   Settings
+   ========================================================================== */
+
+// Lock the screen after this long with no taps or typing. Station screens are shared.
+const IDLE_LOCK_MINUTES = 10;
+
+// The vitals the hardware plan targets (see claude/hardware-sensors.md), with
+// the usual bedside-monitor color for each (drawn as a thin edge on the slot).
+// Only NAMES live here - never a reading.
+const PLANNED_SENSORS = [
+  { name: "Heart rate",          color: "#3ddc4a" },
+  { name: "Blood oxygen (SpO2)", color: "#34d3e8" },
+  { name: "Blood pressure",      color: "#ffffff" },
+  { name: "Temperature",         color: "#f5a524" },
+  { name: "Respiration",         color: "#f2e33a" },
+];
+
+// Escalation levels, most serious first. The word is always shown with the color.
+const LEVEL_WORDS = {
+  emergency: "EMERGENCY",
+  urgent:    "URGENT",
+  monitor:   "MONITOR",
+  routine:   "ROUTINE",
+  none:      "NO MATCH",
+};
+const LEVEL_ORDER = ["routine", "monitor", "urgent", "emergency"];
+
+// The model rates each condition high / moderate / low. Shown as words, never numbers.
+const STRENGTH_WORDS = { high: "Strong match", moderate: "Possible", low: "Unlikely" };
+
+
+/* ==========================================================================
+   Small helpers
+   ========================================================================== */
+
+// Make an element. Text always goes in as textContent, so nothing from the
+// server can ever be run as HTML.
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+const $ = id => document.getElementById(id);
+
+async function postJSON(url, body) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body || {}),
+  });
+  return { status: response.status, data: await response.json() };
+}
+
+// Back to THIS screen's login. A station Pi opened /login?station=<role>, and
+// locking must return there - not to a login that would accept any role.
+function backToLogin() {
+  let page = "/";
+  try { page = sessionStorage.getItem("vitals-login") || "/"; } catch (e) {}
+  window.location.href = page;
+}
+
+
+/* ==========================================================================
+   Who is logged in
+   ========================================================================== */
+
+let me = null;
+
+async function loadSession() {
+  const response = await fetch("/api/me");
+  if (response.status === 401) return backToLogin();
+  me = await response.json();
+  $("emergency-notice").hidden = !me.emergency;
+  drawProfile();
+}
+
+async function lockScreen() {
+  await postJSON("/api/logout");
+  backToLogin();
+}
+$("lock").onclick = lockScreen;
+$("lock-rail").onclick = lockScreen;
+
+// Idle lock: any tap or key press restarts the countdown.
+let idleTimer = null;
+function restartIdleTimer() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(lockScreen, IDLE_LOCK_MINUTES * 60 * 1000);
+}
+["click", "keydown", "touchstart"].forEach(name => document.addEventListener(name, restartIdleTimer));
+
+
+/* ==========================================================================
+   The rail and the drawer
+   ========================================================================== */
+
+let section = null;      // the panel that is open, or null
+
+// Tap an icon to open its panel; tap the same icon again to close it.
+function openDrawer(name) {
+  if (name === section) return closeDrawer();
+  section = name;
+  $("drawer").hidden = false;
+  document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== section);
+  document.querySelectorAll(".rail [data-section]").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.section === section)));
+  $("panel-title").textContent = document.querySelector(`[data-panel="${section}"]`).dataset.title;
+
+  if (section === "vitals") drawVitals();
+  if (section === "chats") drawChatList();
+  if (section === "notes") { seenNotes = new Set(notes.map(n => n.case_id + n.released_at)); drawNotes(); }
+}
+
+function closeDrawer() {
+  section = null;
+  $("drawer").hidden = true;
+  document.querySelectorAll(".rail [data-section]").forEach(b => b.setAttribute("aria-pressed", "false"));
+}
+
+$("close-drawer").onclick = closeDrawer;
+document.querySelectorAll(".rail [data-section]").forEach(button => {
+  button.onclick = () => openDrawer(button.dataset.section);
+});
+
+
+/* ==========================================================================
+   The case: everything said so far, sent to the server as one text
+   ========================================================================== */
+
+let caseText = "";                  // the complaint plus every question and answer
+let corrections = {};               // { finding_id: true/false } fixed by the crewmember
+let askedQuestions = new Set();     // so the same question is never asked twice
+let currentQuestion = null;         // the question on screen right now, if any
+let caseId = null;                  // the server's case for this chat, once VITALS has answered
+let busy = false;
+
+// Kept so a new chat can put the starting hint back.
+const emptyHint = $("empty-hint").cloneNode(true);
+
+$("composer").onsubmit = event => {
+  event.preventDefault();
+  const text = $("message").value.trim();
+  if (!text || busy) return;
+
+  $("empty-hint")?.remove();
+  showCrewMessage(text, currentQuestion);
+
+  // An answer to a question is saved WITH its question, so the text makes
+  // sense on its own: "Do you have a fever? no".
+  const line = currentQuestion ? `${currentQuestion} ${text}` : text;
+  const before = caseText;
+  caseText = caseText ? `${caseText}\n${line}` : line;
+
+  // Only a fresh message is checked on its own for "is this medical?" -
+  // an answer like "no" to a question is medical because of the question.
+  const latest = currentQuestion ? null : text;
+
+  $("message").value = "";
+  growBox();
+  askVitals(latest, before, line);
+};
+
+// Enter sends; Shift+Enter makes a new line. The box grows as you type.
+$("message").addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    $("composer").requestSubmit();
+  }
+});
+function growBox() {
+  const box = $("message");
+  box.style.height = "auto";
+  box.style.height = box.scrollHeight + "px";
+}
+$("message").addEventListener("input", growBox);
+
+function correctFinding(finding) {
+  if (busy) return;
+  const wasYes = finding.value === "yes";
+  corrections[finding.id] = !wasYes;
+  const said = `Correction: ${finding.label} - ${wasYes ? "no" : "yes"}`;
+  showCrewMessage(said);
+  askVitals(null, caseText, said);
+}
+
+async function askVitals(latest = null, caseBefore = caseText, said = null) {
+  busy = true;
+  $("send").disabled = true;
+  const working = showWorking();
+
+  try {
+    // case_id ties every answer in this chat to one case on the Jetson, which
+    // the ground crew sees. `said` is just this turn, for their transcript.
+    const body = { complaint: caseText, corrections, case_id: caseId, said };
+    if (latest) body.latest = latest;
+    const { status, data } = await postJSON("/api/ask", body);
+    if (status === 401) return backToLogin();
+    working.stop();
+    if (data.ok && data.scope && data.scope !== "medical") {
+      // "hi", "thanks", "what's the weather": a plain reply, and the message
+      // is taken back out of the case so it never reaches the model later.
+      caseText = caseBefore;
+      showVitalsMessage(data.message);
+    }
+    else if (data.ok) {
+      if (data.case_id) caseId = data.case_id;
+      showAnswer(data);
+    }
+    else showError(data.error);
+  } catch (error) {
+    working.stop();
+    showError("Cannot reach the VITALS server. Is it still running?\n\n" + error.message);
+  } finally {
+    busy = false;
+    $("send").disabled = false;
+    $("message").focus();
+  }
+}
+
+
+/* ==========================================================================
+   Chat history: earlier chats in this login, kept in the page only
+   ========================================================================== */
+
+const chats = [];          // { title, caseText, corrections, askedQuestions, currentQuestion, log }
+let active = null;         // the chat on screen
+
+function newChatState() {
+  return { title: "", caseText: "", corrections: {}, askedQuestions: new Set(),
+           currentQuestion: null, caseId: null, log: null };
+}
+
+// Park the chat on screen: its words, state and log nodes go into its record.
+function park() {
+  if (!active) return;
+  Object.assign(active, { caseText, corrections, askedQuestions, currentQuestion, caseId });
+  active.title = caseText.split("\n")[0].slice(0, 60);
+  const log = document.createDocumentFragment();
+  while ($("log").firstChild) log.appendChild($("log").firstChild);
+  active.log = log;
+}
+
+// Put a chat on screen.
+function show(chat) {
+  active = chat;
+  ({ caseText, corrections, askedQuestions, caseId } = chat);
+  $("log").innerHTML = "";
+  if (chat.log) $("log").appendChild(chat.log);
+  else $("log").appendChild(emptyHint.cloneNode(true));
+  chat.log = null;
+  setQuestion(chat.currentQuestion);
+  drawChatList();
+}
+
+function startNewChat() {
+  if (busy) return;
+  park();
+  // Only keep a chat in the list if something was said in it.
+  if (active && active.caseText && !chats.includes(active)) chats.unshift(active);
+  show(newChatState());
+  $("message").focus();
+}
+
+function switchTo(chat) {
+  if (busy || chat === active) return;
+  park();
+  if (active.caseText && !chats.includes(active)) chats.unshift(active);
+  show(chat);
+}
+
+function drawChatList() {
+  const list = $("chat-list");
+  list.innerHTML = "";
+  // The chat on screen is listed too, once something has been said in it.
+  const all = active && caseText && !chats.includes(active) ? [active, ...chats] : chats;
+  all.forEach(chat => {
+    const title = chat === active ? caseText.split("\n")[0].slice(0, 60) : chat.title;
+    const pill = el("button", "pill" + (chat === active ? " current" : ""), title || "Untitled");
+    pill.title = title;
+    pill.onclick = () => switchTo(chat);
+    list.appendChild(pill);
+  });
+}
+
+$("new-chat").onclick = startNewChat;
+
+
+/* ==========================================================================
+   Drawing the chat
+   ========================================================================== */
+
+function addToLog(node) {
+  $("log").appendChild(node);
+  node.scrollIntoView({ block: "nearest" });
+}
+
+// An answer is scrolled so its TOP (the level) is showing - acceptance criteria 1.1.
+// Done last, after the "VITALS asks" line has changed the layout.
+function scrollToTopOf(node) {
+  $("log").scrollTop = node.offsetTop - 12;     // .log is position:relative, so offsetTop is inside it
+}
+
+function showCrewMessage(text, question) {
+  const bubble = el("div", "bubble");
+  if (question) bubble.appendChild(el("span", "label", question));
+  bubble.appendChild(document.createTextNode(text));
+  addToLog(bubble);
+  if (!$("drawer").hidden && section === "chats") drawChatList();
+}
+
+// A plain reply from VITALS - a greeting, or "that's not a health question".
+// Words come from the server; the screen never makes up its own.
+function showVitalsMessage(text) {
+  const bubble = el("div", "bubble vitals");
+  bubble.appendChild(el("span", "label", "VITALS"));
+  bubble.appendChild(document.createTextNode(text || ""));
+  addToLog(bubble);
+}
+
+// "VITALS is thinking… 12s". Local models take a while; this stops double taps.
+function showWorking() {
+  const box = el("div", "working");
+  box.appendChild(el("div", "spinner"));
+  const text = el("span", null, "VITALS is thinking…");
+  box.appendChild(text);
+  addToLog(box);
+
+  const started = Date.now();
+  const timer = setInterval(() => {
+    const seconds = Math.round((Date.now() - started) / 1000);
+    text.textContent = `VITALS is thinking… ${seconds}s`;
+  }, 1000);
+
+  return { stop() { clearInterval(timer); box.remove(); } };
+}
+
+// The server's own error text, unchanged. It already says how to fix the problem.
+function showError(message) {
+  const card = el("div", "error-card");
+  card.appendChild(el("b", null, "VITALS could not answer"));
+  card.appendChild(el("pre", null, message || "No error message was sent."));
+  addToLog(card);
+}
+
+function setQuestion(question) {
+  currentQuestion = question;
+  $("asking").hidden = !question;
+  $("asking-text").textContent = question || "";
+  $("message").placeholder = question ? "Type your answer" : "Describe what you feel";
+}
+
+// The overall level for this answer.
+//   - If VITALS escalated, the server says how serious (answer.escalation.level):
+//     the most serious condition the alarm is about, never lower than URGENT.
+//   - Otherwise it is the top condition's urgency.
+function levelOf(answer) {
+  const escalation = answer.escalation || { level: "none" };
+  if (answer.escalate) return escalation.level === "emergency" ? "emergency" : "urgent";
+
+  const top = answer.differential[0];
+  if (!top) return "none";
+  return LEVEL_ORDER.includes(top.urgency) ? top.urgency : "routine";
+}
+
+// The condition the advice should be about: the most serious one the alarm
+// is about, if there is an alarm; otherwise the top-ranked condition.
+function leadCondition(answer) {
+  const flagged = (answer.escalation && answer.escalation.conditions) || [];
+  return flagged[0] || answer.differential[0] || null;
+}
+
+// The server adds "   [finding_id]" to each question. The crew never sees ids.
+function cleanQuestion(question) {
+  return question.replace(/\s*\[[a-z0-9_]+\]\s*$/, "").trim();
+}
+
+function showAnswer(answer) {
+  const card = el("article", "answer");
+
+  // ---- 1. the level, first thing on the card ----
+  const level = levelOf(answer);
+  const band = el("div", "level " + level);
+  band.appendChild(el("span", "word", LEVEL_WORDS[level]));
+  if (answer.escalate) {
+    band.appendChild(el("span", "escalate", "Contact ground medical now"));
+    if (answer.escalation_reason) band.appendChild(el("span", "reason", answer.escalation_reason));
+  }
+  card.appendChild(band);
+
+  const body = el("div", "answer-body");
+  card.appendChild(body);
+
+  // ---- 2. what it could be ----
+  // Conditions the alarm is about come first and are marked, even if the
+  // model ranked them low or did not list them at all.
+  const flagged = (answer.escalation && answer.escalation.conditions) || [];
+  const flaggedIds = new Set(flagged.map(c => c.id));
+  const unlisted = flagged.filter(c => !answer.differential.some(d => d.id === c.id));
+
+  if (answer.differential.length === 0 && unlisted.length === 0) {
+    body.appendChild(el("p", null,
+      "No diagnosis - nothing in the VITALS knowledge base fits what you described. Tell the ground crew."));
+  } else {
+    // The diagnosis: VITALS' top pick, named plainly, with how sure it is.
+    const dx = answer.differential[0];
+    if (dx) body.appendChild(drawDiagnosis(dx, flaggedIds.has(dx.id)));
+
+    // Everything else it weighed. Conditions behind an alarm come first and are marked.
+    const rest = answer.differential.slice(1);
+    if (unlisted.length || rest.length) {
+      body.appendChild(el("h3", null, dx ? "Also considered" : "What it could be"));
+      unlisted.forEach(condition => body.appendChild(drawCondition(condition, true)));
+      rest.filter(condition => flaggedIds.has(condition.id))
+          .forEach(condition => body.appendChild(drawCondition(condition, true)));
+      rest.filter(condition => !flaggedIds.has(condition.id))
+          .forEach(condition => body.appendChild(drawCondition(condition, false)));
+    }
+  }
+
+  // ---- 3. what to do: advice for the lead condition, from the knowledge base ----
+  const top = answer.differential[0];
+  const lead = leadCondition(answer);
+  if (lead && lead.recommend && lead.recommend.length) {
+    const aboutSomethingElse = top && lead.id !== top.id;
+    body.appendChild(el("h3", null,
+      aboutSomethingElse ? `What to do now - treat it as possible ${lead.name}` : "What to do"));
+    const list = el("ul");
+    lead.recommend.forEach(step => list.appendChild(el("li", null, step)));
+    body.appendChild(list);
+
+    // The top-ranked condition's advice is still there, but second and folded away.
+    if (aboutSomethingElse && top.recommend.length) {
+      const other = el("details", "known");
+      other.appendChild(el("summary", null, `If ground medical rules that out: advice for ${top.name}`));
+      const otherList = el("ul");
+      top.recommend.forEach(step => otherList.appendChild(el("li", null, step)));
+      other.appendChild(otherList);
+      body.appendChild(other);
+    }
+  }
+
+  // ---- 4. what VITALS is least sure about ----
+  if (answer.uncertainty) {
+    body.appendChild(el("h3", null, "Least sure about"));
+    body.appendChild(el("p", null, answer.uncertainty));
+  }
+
+  // ---- 5. what VITALS understood, with a way to fix mistakes ----
+  body.appendChild(drawKnown(answer.known || []));
+
+  addToLog(card);
+
+  // ---- 6. the next question, one at a time, never the same one twice ----
+  const next = (answer.next_questions || []).map(cleanQuestion).find(q => q && !askedQuestions.has(q));
+  if (next) askedQuestions.add(next);
+  setQuestion(next || null);
+
+  scrollToTopOf(card);
+}
+
+// The headline answer. "Diagnosis" when VITALS is fairly sure, "Possible
+// diagnosis" when it is not - it never sounds surer than the model rated it.
+const DIAGNOSIS_WORDS = {
+  high:     ["Diagnosis", "VITALS is fairly sure this is what is going on."],
+  moderate: ["Diagnosis", "The most likely cause from what you described."],
+  low:      ["Possible diagnosis", "VITALS needs more information - answer the question below."],
+};
+
+function drawDiagnosis(condition, flagged) {
+  const [title, sure] = DIAGNOSIS_WORDS[condition.confidence] || DIAGNOSIS_WORDS.low;
+  const box = el("div", "diagnosis");
+  box.appendChild(el("div", "dx-label", title));
+  box.appendChild(el("div", "dx-name", condition.name));
+  const meta = el("div", "dx-meta");
+  meta.appendChild(el("span", "dx-sure", STRENGTH_WORDS[condition.confidence] || "Possible"));
+  meta.appendChild(document.createTextNode(` - ${sure}`));
+  box.appendChild(meta);
+  if (flagged) box.appendChild(el("span", "flag", "Serious - the reason for the alert"));
+  if (condition.reasoning) box.appendChild(el("p", "why", condition.reasoning));
+  (condition.sources || []).forEach(source => {
+    const line = el("div", "source");
+    const link = el("a", null, source.title || source.url);
+    link.href = source.url; link.target = "_blank"; link.rel = "noopener";
+    line.appendChild(link);
+    box.appendChild(line);
+  });
+  box.appendChild(el("p", "dx-note", "A doctor reviews this through the ground crew and has the final say."));
+  return box;
+}
+
+function drawCondition(condition, flagged) {
+  const box = el("div", "condition");
+
+  const head = el("div", "head");
+  head.appendChild(el("span", "name", condition.name));
+  if (flagged) head.appendChild(el("span", "flag", "Serious - the reason for the alert"));
+  if (condition.confidence) {
+    head.appendChild(el("span", "strength", "VITALS rates it: " + (STRENGTH_WORDS[condition.confidence] || "Possible")));
+  }
+  box.appendChild(head);
+
+  if (condition.reasoning) box.appendChild(el("p", "why", condition.reasoning));
+  else if (flagged) box.appendChild(el("p", "why", "The backup check flagged this from what you described."));
+
+  // Sources come from the knowledge base. If there are none, say so - never hide the condition.
+  if (!condition.sources || condition.sources.length === 0) {
+    box.appendChild(el("div", "no-source", "No source was sent for this condition."));
+  } else {
+    condition.sources.forEach(source => {
+      const line = el("div", "source");
+      const link = el("a", null, source.title || source.url);
+      link.href = source.url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      line.appendChild(link);
+      box.appendChild(line);
+    });
+  }
+  return box;
+}
+
+function drawKnown(known) {
+  const box = el("details", "known");
+  box.appendChild(el("summary", null, `What VITALS understood (${known.length})`));
+
+  if (known.length === 0) {
+    box.appendChild(el("p", "corrected", "Nothing specific yet."));
+  }
+  known.forEach(finding => {
+    const row = el("div", "known-row");
+    const text = el("span", null, `${finding.label}: ${finding.value}`);
+    if (finding.id in corrections) text.appendChild(el("span", "corrected", "  (you corrected this)"));
+    row.appendChild(text);
+
+    // Only yes/no items can be flipped. Pressing it re-runs VITALS with the fix.
+    if (finding.correctable) {
+      const fix = el("button", "fix", "Wrong?");
+      fix.type = "button";
+      fix.title = `Tell VITALS this is ${finding.value === "yes" ? "not" : ""} true`;
+      fix.onclick = () => correctFinding(finding);
+      row.appendChild(fix);
+    }
+    box.appendChild(row);
+  });
+  return box;
+}
+
+
+/* ==========================================================================
+   Profile, vitals, supplies
+   ========================================================================== */
+
+function drawProfile() {
+  const body = $("profile-body");
+  body.innerHTML = "";
+  $("crew-line").innerHTML = "";
+
+  const who = el("div", "who");
+  const avatar = el("div", "avatar");
+  const text = el("div");
+  who.appendChild(avatar); who.appendChild(text);
+  body.appendChild(who);
+
+  if (me.emergency) {
+    avatar.textContent = "?";
+    text.appendChild(el("p", "role", "Emergency access"));
+    text.appendChild(el("h3", null, "Unnamed crewmember"));
+    body.appendChild(el("p", "note", "No profile on emergency access. Lock the screen and log in to see yours."));
+    $("crew-line").textContent = "Emergency access";
+    return;
+  }
+
+  avatar.textContent = (me.name || "?").trim().charAt(0).toUpperCase();
+  text.appendChild(el("p", "role", "Astronaut"));
+  text.appendChild(el("h3", null, me.name));
+  $("crew-line").appendChild(el("b", null, me.name));
+
+  const entries = Object.entries(me.profile || {});
+  if (entries.length === 0) {
+    body.appendChild(el("p", "note", "No profile details are on file."));
+    return;
+  }
+  const card = el("div", "card");
+  const list = el("dl", "facts");
+  entries.forEach(([label, value]) => {
+    const row = el("div");
+    row.appendChild(el("dt", null, label));
+    row.appendChild(el("dd", null, value));
+    list.appendChild(row);
+  });
+  card.appendChild(list);
+  body.appendChild(card);
+}
+
+async function drawVitals() {
+  const slots = $("sensor-slots");
+  slots.innerHTML = "";
+  PLANNED_SENSORS.forEach(sensor => {
+    const row = el("div", "channel");
+    row.style.setProperty("--tick", sensor.color);
+    row.appendChild(el("div", "label", sensor.name));
+    row.appendChild(el("div", "value", "--"));
+    row.appendChild(el("div", "why", "No sensor connected"));
+    slots.appendChild(row);
+  });
+
+  try {
+    const health = await (await fetch("/api/health")).json();
+    $("sensor-note").textContent = health.sensors === "no sensors connected"
+      ? "Nothing has been measured. VITALS only knows what you tell it."
+      : `Sensors: ${health.sensors}`;
+  } catch (error) {
+    $("sensor-note").textContent = "Cannot reach the VITALS server to check sensors.";
+  }
+}
+
+/* ==========================================================================
+   Doctor notes: released by the ground crew, fetched from the Jetson
+   ========================================================================== */
+
+const NOTES_REFRESH_SECONDS = 20;
+let notes = [];
+let seenNotes = null;            // null until the first load, so old notes are not "new"
+
+async function loadNotes() {
+  if (!me || me.emergency === undefined) return;
+  try {
+    const response = await fetch("/api/my/notes");
+    if (response.status === 401) return backToLogin();
+    const data = await response.json();
+    if (!data.ok) return;
+    notes = data.notes || [];
+    if (seenNotes === null) seenNotes = new Set(notes.map(n => n.case_id + n.released_at));
+    const unseen = notes.filter(n => !seenNotes.has(n.case_id + n.released_at));
+    drawNotesBadge(unseen.length);
+    if (section === "notes") drawNotes();
+  } catch (error) { /* the server may be restarting; try again next round */ }
+}
+
+function drawNotesBadge(count) {
+  const button = document.querySelector('.rail [data-section="notes"]');
+  button.querySelector(".dot")?.remove();
+  button.setAttribute("aria-label", count ? `Doctor notes (${count} new)` : "Doctor notes");
+  if (count) button.appendChild(el("span", "dot"));
+}
+
+function drawNotes() {
+  const list = $("notes-list");
+  list.innerHTML = "";
+  $("notes-empty").hidden = notes.length > 0;
+  $("notes-until").hidden = notes.length > 0;
+  notes.forEach(note => {
+    const card = el("div", "card note-card");
+    card.appendChild(el("h3", null, note.title || "Your question"));
+    card.appendChild(el("p", "when",
+      `Asked ${new Date(note.asked_at * 1000).toLocaleString()} - reviewed ${new Date(note.released_at * 1000).toLocaleString()}`));
+    if (note.verdict_words) card.appendChild(el("span", "verdict", `Doctor: ${note.verdict_words}`));
+    card.appendChild(el("p", "message", note.message));
+    card.appendChild(el("p", "when", "Checked by the ground crew before it was sent to you."));
+    list.appendChild(card);
+  });
+  drawNotesBadge(0);
+}
+
+/* ==========================================================================
+   Start
+   ========================================================================== */
+
+loadSession().then(loadNotes);
+setInterval(loadNotes, NOTES_REFRESH_SECONDS * 1000);
+show(newChatState());
+restartIdleTimer();
+$("message").focus();
+</script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VITALS — Team TETHER</title>
+<meta name="description" content="VITALS: an offline medical assistant for crews on long-duration Moon and Mars missions. NASA HUNCH 2026-27, Team TETHER.">
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --ink: #e6edf3; --muted: #9aa7b4; --line: #2b3440;
+    --accent: #ff7a45; --ok: #3fb950; --warn: #d29922; --bad: #f85149;
+    --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f7f8fa; --panel: #ffffff; --ink: #14181f; --muted: #56606b; --line: #d8dde3;
+            --accent: #c2410c; --ok: #1a7f37; --warn: #9a6700; --bad: #cf222e; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 var(--sans); }
+  main { max-width: 960px; margin: 0 auto; padding: 0 16px 64px; }
+  header { padding: 56px 0 32px; border-bottom: 1px solid var(--line); }
+  .kicker { font: 600 13px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-size: clamp(40px, 8vw, 72px); line-height: 1; margin: 12px 0 8px; letter-spacing: -.02em; }
+  .sub { font-size: 20px; color: var(--muted); max-width: 640px; margin: 0; }
+  h2 { font-size: 26px; margin: 48px 0 12px; }
+  p { max-width: 70ch; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font: 600 13px var(--mono); }
+  .box.key { border-color: var(--accent); }
+  .arrow { color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .ok { color: var(--ok); font-weight: 600; } .warn { color: var(--warn); font-weight: 600; } .bad { color: var(--bad); font-weight: 600; }
+  .big { font: 700 40px/1 var(--sans); }
+  .tbl-wrap { overflow-x: auto; }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="kicker">NASA HUNCH 2026–27 · Software &amp; Technology · Team TETHER</div>
+  <h1>VITALS</h1>
+  <p class="sub">When the doctor is 20 minutes away, the crew still needs an answer now. VITALS is an onboard medical assistant a non-medical crewmember can talk to — offline, grounded in spaceflight research, and honest about what it doesn't know.</p>
+</header>
+
+<h2>The problem</h2>
+<p>On Mars, a message to the flight surgeon takes 4 to 40 minutes each way, and NASA plans for blackouts of up to two weeks. Most crews will have no physician on board. When someone gets sick or hurt, the person helping them needs to know: what could this be, how serious is it, and what do we do now?</p>
+
+<h2>What it does</h2>
+<div class="grid">
+  <div class="card"><h3>Talk in your own words</h3><p>“Bad pain in my right side, comes in waves, blood in my urine.” No medical vocabulary needed.</p></div>
+  <div class="card"><h3>Urgency first</h3><p>The escalation level is the first thing on screen — as a word and a color, never color alone.</p></div>
+  <div class="card"><h3>Every answer has a source</h3><p>It can only name conditions we researched, and it never writes its own citations — they come from our knowledge base.</p></div>
+  <div class="card"><h3>Safety backstop</h3><p>A rules engine checks every answer. If it says escalate, the answer escalates, whatever the AI said.</p></div>
+  <div class="card"><h3>Fully offline</h3><p>Runs on an NVIDIA Jetson in the habitat with the language model built in. No internet, ever.</p></div>
+  <div class="card"><h3>A doctor in the loop</h3><p>Ground crew send a redacted case to a doctor and check the reply before the crew sees it.</p></div>
+</div>
+
+<h2>How it works</h2>
+<div class="flow" aria-label="Pipeline">
+  <span class="box">crew message</span><span class="arrow">→</span>
+  <span class="box">is it medical?</span><span class="arrow">→</span>
+  <span class="box">read the findings</span><span class="arrow">→</span>
+  <span class="box">pick cited KB pages</span><span class="arrow">→</span>
+  <span class="box key">local AI reasons over those pages only</span><span class="arrow">→</span>
+  <span class="box">check the reply + rules backstop</span><span class="arrow">→</span>
+  <span class="box">answer + sources</span>
+</div>
+<p>Three screens run from the one Jetson: the <strong>astronaut</strong> screen, the <strong>ground crew</strong> screen (sees everything, decides what the doctor sees), and the <strong>doctor</strong> screen (sees only the redacted case).</p>
+
+<h2>Where it stands (PDR)</h2>
+<div class="grid">
+  <div class="card"><div class="big">35</div><p>spaceflight conditions, each with its sources</p></div>
+  <div class="card"><div class="big">266</div><p>automated tests passing</p></div>
+  <div class="card"><div class="big">18 / 19</div><p>must-escalate complaints escalated through the AI (Oct 17) — the miss is our first fix</p></div>
+  <div class="card"><div class="big">6 / 6</div><p>basic missions passing, every step logged</p></div>
+</div>
+<div class="tbl-wrap"><table>
+  <tr><th>Part</th><th>Status</th></tr>
+  <tr><td>Knowledge base, reasoning, safety backstop</td><td class="ok">Working</td></tr>
+  <tr><td>Astronaut, ground crew and doctor screens</td><td class="ok">Working</td></tr>
+  <tr><td>Saying “nothing fits” instead of guessing</td><td class="warn">Weakest area — next fix</td></tr>
+  <tr><td>Running on the real Jetson</td><td class="warn">Board not flashed yet</td></tr>
+  <tr><td>Heart rate, SpO₂, blood pressure, temperature sensors</td><td class="bad">Slots ready, hardware not wired — the screen says “not connected”, never a fake number</td></tr>
+</table></div>
+
+<h2>Videos</h2>
+<p><!-- TEAM: replace with the uploaded links --> Prototype demo (4 min) · Presentation (3 min) — coming before PDR.</p>
+
+<h2>Team TETHER</h2>
+<div class="grid">
+  <div class="card"><h3>Joshua Collado</h3><p>Project lead · main coder</p></div>
+  <div class="card"><h3>Joaquin</h3><p>Medical research · co-coder on the diagnostic engine</p></div>
+  <div class="card"><h3>Cruz</h3><p>UI design · user testing</p></div>
+</div>
+<p>Teacher: Ms. Sylvia Odoms · Regional mentor: Michael Hayes, Voyager Technologies</p>
+
+<footer>
+  NASA project: Medical Diagnostic System with Machine Learning &amp; Artificial Intelligence (From a non-Medical Person’s Perspective). VITALS is a student prototype for decision support — not a medical device.
+</footer>
+</main>
+</body>
+</html>

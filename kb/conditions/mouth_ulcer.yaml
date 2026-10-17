@@ -1,0 +1,60 @@
+id: mouth_ulcer
+name: Mouth Ulcer or Cold Sore
+aka: [canker sore, aphthous ulcer, cold sore, fever blister, oral herpes, HSV-1]
+category: dermatologic
+urgency: routine
+# NASA IMM baseline (2017): 9 events / 45.49 person-years = 0.198 per
+# person-year - 3 canker sores and 6 cold sores. Higher than terrestrial
+# comparison groups (Navy, Army, submarine crews).
+prior: 0.04
+
+description: >
+  A painful sore inside the mouth (canker sore) or a blister on the lip
+  (cold sore, from the herpes virus waking up). Sore to eat and drink. Most
+  heal on their own in one to three weeks.
+
+microgravity_note: >
+  Spaceflight weakens parts of the immune system, and viruses that sleep in
+  the body - like the cold sore virus - wake up more often on orbit. NASA has
+  found these viruses in crew saliva during flight even with no symptoms, and
+  cold sores were two thirds of the in-flight mouth ulcers. Stress and poor
+  sleep make it more likely. A cold sore is contagious, so no shared cups or
+  utensils.
+
+findings:
+  - finding: mouth_sore
+    weight: 2.6
+    note: A painful sore inside the mouth.
+  - finding: cold_sore_lip
+    weight: 2.6
+    note: A blister on the lip.
+  - finding: skin_pain_before_rash
+    weight: 0.6
+    note: Tingling before a cold sore appears.
+  - finding: fever
+    weight: 0.2
+  - finding: tooth_pain
+    weight: -1.0
+    note: Pain in a tooth, not the soft tissue, points to dental.
+  - finding: jaw_or_face_swelling
+    weight: -0.6
+    note: Swelling of the jaw or face is a dental abscess warning - red flag.
+  - finding: lip_or_tongue_swelling
+    weight: -1.2
+    note: Sudden lip or tongue swelling is an allergic reaction, not an ulcer.
+
+red_flags: [jaw_or_face_swelling]
+
+recommend:
+  - Rinse with salt water; avoid spicy, salty and acidic food until it heals.
+  - Use a numbing gel or pain relief from the kit before meals if it hurts to eat.
+  - For a cold sore, ask ground medical about the antiviral in the kit - it works best in the first day of tingling.
+  - Do not share cups, utensils or lip balm while a cold sore is present.
+  - Contact ground medical if it lasts more than 2 weeks, there are many sores, there is fever, or the jaw or face swells.
+
+differential: [dental_emergency, allergic_reaction, herpes_zoster]
+
+sources:
+  - title: "Mouth Ulcer - NASA Integrated Medical Model CliFF Baseline (2017)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/mouth-ulcer-cliff.pdf"
+    note: 0.198 per person-year; 3 aphthous ulcers, 6 cold sores (HSV-1 reactivation); higher than terrestrial analogs.

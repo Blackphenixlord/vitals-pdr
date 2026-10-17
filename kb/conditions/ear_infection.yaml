@@ -1,0 +1,69 @@
+id: ear_infection
+name: Ear Infection
+aka: [otitis media, otitis externa, swimmer's ear, middle ear infection, earache]
+category: ent
+urgency: monitor
+# NASA IMM baselines (2020): otitis media 4 / 45.49 = 0.088 per person-year;
+# otitis externa 3 / 45.49 = 0.066 per person-year. Combined ~0.15.
+prior: 0.03
+
+description: >
+  Infection of the middle ear (behind the eardrum) or of the outer ear canal.
+  Middle ear: deep ear pain, muffled hearing, sometimes fever, often after a
+  cold. Outer ear canal: pain that is worse when the ear is pulled or
+  pressed, itching, and discharge.
+
+microgravity_note: >
+  The fluid shift and constant nasal congestion on orbit swell the tube that
+  drains the middle ear, so fluid can sit behind the eardrum the same way it
+  does with a head cold on Earth. Ear canals also stay damp under headsets
+  and communication caps worn for hours a day. The ISS cabin is loud, so
+  muffled hearing is easy to blame on noise and miss - compare one ear with
+  the other. An otoscope is in the kit for looking at the eardrum.
+
+findings:
+  - finding: ear_pain
+    weight: 2.6
+    absent_weight: -2.5
+    note: The core complaint for both types.
+  - finding: hearing_reduced
+    weight: 1.2
+    note: Fluid behind the eardrum muffles hearing.
+  - finding: ear_discharge
+    weight: 1.4
+  - finding: ear_pain_on_tugging
+    weight: 1.4
+    note: Pain when the outer ear is pulled points to the ear canal (otitis externa).
+  - finding: fever
+    weight: 0.6
+  - finding: nasal_congestion
+    weight: 0.4
+    note: Small weight - congestion is near-universal on orbit, but it is why the ear tube blocks.
+  - finding: sore_throat
+    weight: 0.3
+  - finding: itching
+    weight: 0.4
+  - finding: tooth_pain
+    weight: -0.6
+    note: Jaw and tooth pain can be felt in the ear; a tooth complaint points to dental.
+  - finding: vertigo
+    weight: 0.4
+    note: Spinning with an ear infection can mean the inner ear is involved - red flag.
+
+red_flags: [vertigo]
+
+recommend:
+  - Look in both ears with the kit otoscope and compare. Note redness, bulging, fluid or a swollen, wet canal.
+  - Take pain relief from the kit as directed and keep the ear dry; do not put cotton swabs in the canal.
+  - For an outer-ear infection, ask ground medical about antibiotic ear drops; for a middle-ear one, about oral antibiotics from the kit.
+  - Contact ground medical for fever, spinning or balance problems, swelling behind the ear, or sudden hearing loss.
+
+differential: [dental_emergency, sinonasal_congestion, urti]
+
+sources:
+  - title: "Otitis Media - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/otitis-media-cliff.pdf"
+    note: 0.088 per person-year in flight; ear pain, warmth and decreased hearing; best case 80-100%.
+  - title: "Otitis Externa - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/otitis-externa-cliff.pdf"
+    note: 0.066 per person-year; itching, pain and discharge; tender, swollen canal.

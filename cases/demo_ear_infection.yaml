@@ -1,0 +1,12 @@
+title: "FD 40 - earache with muffled hearing after a cold"
+narrative: >
+  My right ear hurts and sounds muffled. I had a cold last week. Temp 37.9.
+  No spinning, no tooth pain.
+expect_top: ear_infection
+observations:
+  ear_pain: true
+  hearing_reduced: true
+  fever: 37.9
+  vertigo: false
+  tooth_pain: false
+  mission_elapsed_days: 40

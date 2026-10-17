@@ -1,0 +1,73 @@
+id: indigestion_reflux
+name: Heartburn and Indigestion
+aka: [GERD, acid reflux, gastroesophageal reflux, gastritis, dyspepsia, indigestion, heartburn]
+category: gastrointestinal
+urgency: routine
+# NASA IMM baseline (2020): 11 events / 45.49 person-years = 0.242 per
+# person-year. 29 more bloating/flatulence events were excluded.
+prior: 0.05
+
+description: >
+  Stomach acid coming up into the food pipe, or an irritated stomach lining.
+  A burning feeling behind the breastbone, sour taste, burping, pain in the
+  upper belly, worse after meals. Usually eased by antacids.
+
+microgravity_note: >
+  On Earth gravity keeps stomach contents down. On orbit nothing settles:
+  gas and liquid mix in the stomach, so a burp often brings liquid up with
+  it ("wet burps"). Fluid shifts, packaged food and pain relievers from the
+  kit (which irritate the stomach) all add to it. NASA says mild reflux and
+  gastritis complaints are common but have never affected operations and
+  usually settle with antacids. The serious look-alike is the heart - a
+  burning chest that comes with exercise is a heart problem until shown
+  otherwise.
+
+findings:
+  - finding: heartburn
+    weight: 2.4
+    absent_weight: -1.2
+    note: The core symptom.
+  - finding: sour_taste_regurgitation
+    weight: 2.0
+  - finding: upper_abdominal_pain
+    weight: 1.2
+  - finding: worse_after_eating
+    weight: 1.4
+  - finding: relieved_by_antacid
+    weight: 1.6
+  - finding: bloating
+    weight: 0.5
+  - finding: nausea
+    weight: 0.4
+  - finding: chest_pain
+    weight: 0.4
+    note: Heartburn is felt in the chest, but chest pain is weighted low on purpose.
+  - finding: chest_pain_on_exertion
+    weight: -1.6
+    note: Chest symptoms brought on by exercise point to the heart, not the stomach - red flag.
+  - finding: pain_radiates_arm_jaw
+    weight: -1.6
+  - finding: shortness_of_breath
+    weight: -0.8
+  - finding: vomiting_blood
+    weight: 0.6
+    note: Bleeding from an ulcer - red flag.
+  - finding: blood_in_stool
+    weight: 0.3
+    note: Black, tarry stool can mean a bleeding ulcer - red flag.
+
+red_flags: [vomiting_blood, blood_in_stool, chest_pain_on_exertion]
+
+recommend:
+  - Take an antacid from the kit as directed and note whether it helps.
+  - Eat smaller meals, avoid eating in the 2-3 hours before sleep, and limit caffeine and spicy food.
+  - Ask ground medical before taking more ibuprofen or aspirin - they irritate the stomach.
+  - Contact ground medical now if the chest pain comes with exercise, spreads to the arm or jaw, or comes with sweating or breathlessness - treat it as the heart until ruled out.
+  - Contact ground medical now for vomiting blood, black or tarry stool, or trouble swallowing.
+
+differential: [acute_coronary_syndrome, appendicitis, diarrhea_gastroenteritis]
+
+sources:
+  - title: "Indigestion - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/indigestion-cliff.pdf"
+    note: 0.242 per person-year in flight; mild GERD and gastritis common, relieved by antacids; worst case ulceration and bleeding.

@@ -1,0 +1,15 @@
+title: "FD 70 - rolled ankle in the foot restraint"
+narrative: >
+  Rolled my ankle in the foot restraint on the treadmill. It's swollen and
+  bruised and hurts to move. Still can push off. Not after an EVA.
+expect_top: sprain_strain
+observations:
+  limb_injury_event: true
+  joint_pain: true
+  joint_swelling: true
+  bruising: true
+  range_of_motion_limited: true
+  cannot_use_limb: false
+  limb_deformity: false
+  recent_decompression: false
+  mission_elapsed_days: 70

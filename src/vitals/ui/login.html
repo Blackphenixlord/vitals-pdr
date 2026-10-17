@@ -1,0 +1,262 @@
+<!doctype html>
+<!--
+  VITALS - log in.
+  Idea from Cruz's mockup (Oct 2026): emblem, name, password on navy.
+  Shares its colors and type with astronaut.html.
+  "Password" is the person's PIN (4-6 digits). The name must match the PIN's
+  account; the server checks both and sets an HttpOnly cookie. This page never
+  stores anything itself.
+  The emblem is our own mark, drawn here in SVG. Do not swap in the NASA
+  insignia - its use is restricted and needs NASA's written approval.
+  Offline: no fonts, scripts or images from the internet. Everything is here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VITALS - log in</title>
+<style>
+  /* ---- tokens: the same ones astronaut.html uses. All text passes 4.5:1. ---- */
+  :root {
+    --bg:        #14172e;
+    --surface:   #1c2042;
+    --raised:    #272c57;
+    --line:      #3a4078;
+    --ink:       #eef0fb;
+    --muted:     #aab0dc;
+    --signal:    #8cc8ff;
+    --signal-ink:#0b1830;
+    --danger:    #d7262b;
+    --error:     #ffb8b8;
+    --display: Bahnschrift, "DIN Alternate", "Barlow", "Roboto Condensed", system-ui, sans-serif;
+    --body: "Segoe UI", system-ui, Roboto, "Helvetica Neue", sans-serif;
+    --r-md: 14px; --r-lg: 20px;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 16px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.5 var(--body);
+  }
+  :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+  .emblem { width: 150px; height: 150px; }
+  .wordmark { margin: 8px 0 26px; text-align: center; }
+  .wordmark h1 { margin: 0; font: 600 30px/1.1 var(--display); letter-spacing: 6px; }
+  .wordmark p  { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+
+  .sheet {
+    width: 100%; max-width: 380px;
+    padding: 26px 26px 22px;
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  label { display: block; margin: 0 0 6px; font-size: 15px; color: var(--muted); }
+  input {
+    width: 100%;
+    height: 52px;                       /* tap target: 44px minimum */
+    margin-bottom: 16px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--raised);
+    color: var(--ink);
+    font: inherit; font-size: 20px;
+  }
+  input:focus { outline: 2px solid var(--signal); border-color: var(--signal); }
+  .message { min-height: 26px; margin: -4px 0 10px; font-size: 15px; color: var(--error); }
+  .message.info { color: var(--muted); }
+  .go, .emergency, .plain {
+    width: 100%; min-height: 52px; border: 0; border-radius: var(--r-md);
+    font: inherit; font-weight: 650; cursor: pointer;
+  }
+  .go { background: var(--signal); color: var(--signal-ink); }
+  .go:hover { filter: brightness(1.08); }
+  .go:disabled { opacity: .45; cursor: not-allowed; }
+  .emergency {
+    width: 100%; max-width: 380px;
+    margin-top: 16px; padding: 10px 16px; min-height: 64px;
+    background: var(--danger); color: #ffffff;
+    font-family: var(--display); font-size: 19px; letter-spacing: 1px;
+  }
+  .emergency:hover { filter: brightness(1.08); }
+  .emergency span { display: block; font: 400 14px/1.4 var(--body); letter-spacing: 0; }
+  .plain { margin-top: 16px; background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 400; }
+  .not-built { text-align: center; }
+  .wordmark .station {
+    display: inline-block; margin-top: 12px; padding: 6px 16px; border-radius: 999px;
+    background: var(--raised); color: var(--ink); font: 600 16px/1.3 var(--display); letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Our own mission-patch style emblem: orbit, stars, and a pulse line. -->
+<svg class="emblem" viewBox="0 0 200 200" role="img" aria-label="VITALS emblem">
+  <defs>
+    <radialGradient id="disc" cx="40%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#3f4fb8"/><stop offset="1" stop-color="#25307a"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="92" fill="url(#disc)" stroke="#121530" stroke-width="4"/>
+  <g fill="#ffffff">
+    <circle cx="62" cy="48" r="2"/><circle cx="128" cy="40" r="1.6"/><circle cx="148" cy="62" r="2.2"/>
+    <circle cx="44" cy="80" r="1.4"/><circle cx="150" cy="128" r="1.6"/><circle cx="60" cy="146" r="2"/>
+    <circle cx="84" cy="36" r="1.2"/><circle cx="118" cy="160" r="1.4"/><circle cx="38" cy="118" r="1.6"/>
+  </g>
+  <ellipse cx="100" cy="100" rx="78" ry="30" fill="none" stroke="#ffffff" stroke-width="2.5"
+           transform="rotate(-24 100 100)"/>
+  <path d="M14 112 H62 L72 92 L84 134 L98 66 L110 118 L118 104 H186" fill="none"
+        stroke="#e03a3e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="100" y="92" text-anchor="middle" fill="#ffffff"
+        font-family="system-ui, Segoe UI, sans-serif" font-size="30" font-weight="800"
+        letter-spacing="3">VITALS</text>
+</svg>
+<div class="wordmark">
+  <p>Team TETHER. Diagnosis + decision support · a doctor has the final say.</p>
+  <p class="station" id="station-line" hidden></p>
+</div>
+
+<form class="sheet" id="login-view" autocomplete="off">
+  <label for="name">Name</label>
+  <input id="name" name="name" autocapitalize="words" spellcheck="false">
+
+  <label for="pin">Password</label>
+  <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6">
+
+  <div class="message info" id="message" role="status" aria-live="polite">Your password is your PIN</div>
+  <button class="go" id="go" type="submit">Log in</button>
+</form>
+
+<button class="emergency" id="emergency" type="button">
+  EMERGENCY - skip login
+  <span>Opens the symptom check without a password</span>
+</button>
+
+<!-- Only for roles whose screen does not exist yet -->
+<section id="not-built-view" class="sheet not-built" hidden>
+  <p id="not-built-text"></p>
+  <button class="plain" id="log-out">Log out</button>
+</section>
+
+<script>
+  const MIN_DIGITS = 4;
+  const MAX_DIGITS = 6;
+  const ROLE_NAMES = { astronaut: "astronaut", ground: "ground crew", doctor: "doctor" };
+
+  const $ = id => document.getElementById(id);
+
+  // A Pi set up for one screen opens /login?station=<role>. The server then
+  // refuses any other role here - the doctor's Pi can never open the full,
+  // unredacted ground crew view. No station = any role (a laptop, the Jetson).
+  const station = new URLSearchParams(location.search).get("station");
+  const STATION = ROLE_NAMES[station] ? station : null;
+  if (STATION) {
+    $("station-line").hidden = false;
+    $("station-line").textContent = `${ROLE_NAMES[STATION].toUpperCase()} STATION`;
+    document.title = `VITALS - ${ROLE_NAMES[STATION]} station`;
+  }
+  // Emergency access opens the astronaut screen, so only offer it there.
+  if (STATION && STATION !== "astronaut") $("emergency").hidden = true;
+
+  function say(text, isError) {
+    $("message").textContent = text;
+    $("message").className = isError ? "message" : "message info";
+  }
+
+  function setEnabled(enabled) {
+    ["name", "pin", "go"].forEach(id => $(id).disabled = !enabled);
+  }
+
+  // Only digits go in the password box.
+  $("pin").addEventListener("input", () => {
+    $("pin").value = $("pin").value.replace(/\D/g, "").slice(0, MAX_DIGITS);
+  });
+
+  $("login-view").onsubmit = async event => {
+    event.preventDefault();
+    const name = $("name").value.trim();
+    const pin = $("pin").value;
+    if (!name) { say("Type your name", true); $("name").focus(); return; }
+    if (pin.length < MIN_DIGITS) { say(`Passwords are ${MIN_DIGITS} to ${MAX_DIGITS} digits`, true); $("pin").focus(); return; }
+
+    say("Checking…", false);
+    setEnabled(false);
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, pin, station: STATION }),
+      });
+      const result = await response.json();
+      $("pin").value = "";
+      if (result.ok) return openScreen(result);
+      say(result.error, true);
+      if (result.retry_after) return waitOut(result.retry_after);
+    } catch (error) {
+      say("Cannot reach the VITALS server. Is it running?", true);
+    }
+    setEnabled(true);
+    $("pin").focus();
+  };
+
+  // Lockout after too many wrong tries: count down, then let them try again.
+  function waitOut(seconds) {
+    setEnabled(false);
+    const timer = setInterval(() => {
+      seconds -= 1;
+      if (seconds <= 0) {
+        clearInterval(timer);
+        setEnabled(true);
+        say("Your password is your PIN", false);
+      } else {
+        say(`Too many wrong tries. Try again in ${seconds} seconds.`, true);
+      }
+    }, 1000);
+  }
+
+  $("emergency").onclick = async () => {
+    try {
+      const response = await fetch("/api/emergency", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ station: STATION }),
+      });
+      const result = await response.json();
+      if (result.ok) openScreen(result);
+      else say(result.error, true);
+    } catch (error) {
+      say("Cannot reach the VITALS server. Is it running?", true);
+    }
+  };
+
+  function openScreen(session) {
+    if (session.page) {
+      // Remember the station, so locking the screen comes back to THIS login.
+      const back = STATION ? `?station=${STATION}` : "";
+      try { sessionStorage.setItem("vitals-login", "/login" + back); } catch (e) {}
+      window.location.href = session.page;
+      return;
+    }
+    // Logged in, but that role's screen has not been built yet.
+    $("login-view").hidden = true;
+    $("emergency").hidden = true;
+    $("not-built-view").hidden = false;
+    $("not-built-text").textContent =
+      `Hi ${session.name}. The ${ROLE_NAMES[session.role] || session.role} screen isn't built yet.`;
+  }
+
+  $("log-out").onclick = async () => {
+    await fetch("/api/logout", { method: "POST", body: "{}" });
+    window.location.reload();
+  };
+
+  $("name").focus();
+</script>
+</body>
+</html>

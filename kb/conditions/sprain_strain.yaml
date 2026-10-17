@@ -1,0 +1,75 @@
+id: sprain_strain
+name: Sprain or Strain (Ankle, Wrist, Knee)
+aka: [sprain, strain, sprained ankle, sprained wrist, twisted ankle, jammed finger, pulled muscle]
+category: musculoskeletal
+urgency: monitor
+# NASA IMM baselines (2017): ankle 11 / 44.58 = 0.247 per person-year;
+# wrist 9 / 44.58 = 0.202 per person-year. Shoulder has its own rule.
+prior: 0.06
+
+description: >
+  A stretched or torn ligament (sprain) or muscle or tendon (strain) after a
+  twist, jam or impact. Pain, swelling and bruising around a joint, worse
+  when it is used. Most heal in 2 to 4 weeks with rest, ice and compression.
+
+microgravity_note: >
+  Crew push off and stop with their hands and feet hundreds of times a day,
+  so wrists and fingers take the impacts that legs take on Earth. Ankles get
+  hurt in foot restraints - the EVA foot restraint forces the ankle to twist
+  - and on the treadmill. The fluid shift moves fluid out of the legs, so an
+  injured ankle swells LESS than it would on Earth and can look milder than it
+  is. Elevation does nothing in microgravity; compression does the work
+  instead. Joint pain after an EVA without any twist or impact is
+  decompression sickness until proven otherwise.
+
+findings:
+  - finding: limb_injury_event
+    weight: 2.2
+    absent_weight: -1.2
+    note: A twist, jam or impact. Without one, think overuse or decompression sickness.
+  - finding: joint_pain
+    weight: 1.4
+  - finding: joint_swelling
+    weight: 1.4
+  - finding: bruising
+    weight: 1.2
+  - finding: range_of_motion_limited
+    weight: 0.8
+  - finding: pain_after_exercise
+    weight: 0.6
+  - finding: cannot_use_limb
+    weight: 0.8
+    note: Cannot grip or push off at all - possible fracture or full tear, red flag.
+  - finding: limb_deformity
+    weight: 0.6
+    note: Bent or out of place - fracture or dislocation, red flag.
+  - finding: numbness_or_weakness
+    weight: 0.3
+    note: Numbness past the injury may mean a nerve or blood vessel is involved - red flag.
+  - finding: recent_decompression
+    weight: -1.0
+    note: Joint pain after an EVA points toward DCS.
+  - finding: skin_mottling
+    weight: -1.2
+  - finding: shoulder_pain
+    weight: -0.6
+    note: Shoulder is covered by its own overuse rule.
+
+red_flags: [limb_deformity, cannot_use_limb, numbness_or_weakness]
+
+recommend:
+  - Stop using it. Apply a cold pack for 15-20 minutes every few hours for the first 2 days.
+  - Wrap it with a compression bandage from the kit - elevation does not work on orbit, so compression does the job.
+  - Pain relief from the kit as directed. Splint a wrist or finger if moving it hurts.
+  - Ask ground medical about changing exercise on ARED and the treadmill until it heals.
+  - Contact ground medical now if it looks bent or out of place, cannot be used at all, the skin past it is numb, pale or cold, or the pain started after an EVA with no injury.
+
+differential: [msk_shoulder_overuse, decompression_sickness, wound_laceration]
+
+sources:
+  - title: "Ankle Sprain/Strain - NASA Integrated Medical Model CliFF Baseline (2017)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/ankle-sprain-strain-cliff.pdf"
+    note: 0.247 per person-year; treadmill, EVA foot restraints, cabin impacts; reduced swelling in microgravity.
+  - title: "Wrist Sprain/Strain - NASA Integrated Medical Model CliFF Baseline (2017)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/wrist-sprain-strain-cliff.pdf"
+    note: 0.202 per person-year; impacts and upper-limb translation; P.R.I.C.E. without elevation on orbit.

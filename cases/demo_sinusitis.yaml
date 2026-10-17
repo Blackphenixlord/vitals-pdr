@@ -1,0 +1,13 @@
+title: "FD 55 - cold that got better then worse, green mucus and cheek pain"
+narrative: >
+  Had a cold, it got better, then got worse again. Now thick green mucus and
+  pain over my cheeks. Temp 38.2. Was not congested before this started.
+expect_top: acute_sinusitis
+observations:
+  facial_pain_pressure: true
+  purulent_discharge: true
+  worse_after_improving: true
+  nasal_congestion: true
+  fever: 38.2
+  congestion_since_arrival: false
+  mission_elapsed_days: 55

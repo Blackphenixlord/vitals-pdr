@@ -1,0 +1,11 @@
+title: "FD 100 - cold sore on the lip"
+narrative: >
+  Tingled yesterday and now there's a blister on my lip. No tooth pain, no
+  swelling.
+expect_top: mouth_ulcer
+observations:
+  cold_sore_lip: true
+  skin_pain_before_rash: true
+  tooth_pain: false
+  jaw_or_face_swelling: false
+  mission_elapsed_days: 100

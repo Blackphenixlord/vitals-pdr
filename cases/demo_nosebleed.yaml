@@ -1,0 +1,13 @@
+title: "FD 3 - nosebleed after blowing a dry nose"
+narrative: >
+  My nose started bleeding after I blew it, it's been really dry up here.
+  Pinched it for ten minutes and it slowed down. Nothing down my throat.
+expect_top: epistaxis
+observations:
+  nosebleed: true
+  nose_dry_or_picked: true
+  nasal_congestion: true
+  bleeding_down_throat: false
+  bleeding_uncontrolled: false
+  head_strike: false
+  mission_elapsed_days: 3

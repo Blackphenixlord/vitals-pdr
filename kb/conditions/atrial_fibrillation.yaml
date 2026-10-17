@@ -1,0 +1,63 @@
+id: atrial_fibrillation
+name: Irregular Heartbeat (Atrial Fibrillation)
+aka: [atrial fibrillation, AFib, atrial flutter, arrhythmia, irregular heartbeat]
+category: cardiovascular
+urgency: urgent
+# NASA IMM baseline (2020): 0.00071 male, 0.00023 female per person-year
+# (Bayesian, from population and astronaut data). None reported in flight.
+# Floored like the other rare dangerous rules.
+prior: 0.003
+
+description: >
+  The top chambers of the heart beat fast and out of rhythm. Fluttering or
+  pounding in the chest, an irregular pulse, breathlessness, lightheadedness
+  or tiredness. It can come and go. The danger is a clot forming in the heart
+  and causing a stroke.
+
+microgravity_note: >
+  No case has been reported in flight, but it is the most common rhythm
+  problem in astronauts on the ground, and spaceflight changes the heart:
+  the fluid shift stretches the top chambers early in flight, and the heart
+  muscle shrinks on long missions. Anxiety, caffeine and poor sleep cause
+  harmless skipped beats that feel similar, so the pulse itself has to be
+  checked - the kit has an ECG.
+
+findings:
+  - finding: irregular_heartbeat
+    weight: 3.0
+    absent_weight: -1.5
+    note: An irregularly irregular pulse is the core sign - close to diagnostic with an ECG.
+  - finding: palpitations
+    weight: 1.8
+  - finding: hr_elevated
+    weight: 0.8
+  - finding: presyncope
+    weight: 1.0
+  - finding: shortness_of_breath
+    weight: 0.6
+  - finding: fatigue
+    weight: 0.4
+  - finding: chest_pain
+    weight: 0.4
+    note: Chest pain with a fast irregular heart - red flag.
+  - finding: recent_gravity_transition
+    weight: -0.8
+    note: Racing heart on standing after landing is orthostatic intolerance.
+  - finding: confusion
+    weight: 0.4
+    note: Confusion or weakness on one side can mean a stroke from a clot - red flag.
+
+red_flags: [chest_pain, presyncope, confusion]
+
+recommend:
+  - Check the pulse at the wrist for a full minute and note whether it is regular.
+  - Record an ECG with the onboard equipment and send it to ground medical.
+  - Stop exercise, rest, and avoid caffeine until ground medical reviews it.
+  - Contact ground medical now - for chest pain, fainting or near-fainting, breathlessness, or any weakness, numbness or trouble speaking (possible stroke), treat it as an emergency.
+
+differential: [acute_coronary_syndrome, orthostatic_intolerance, sleep_disruption_circadian]
+
+sources:
+  - title: "Atrial Fibrillation/Atrial Flutter - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/atrial-fibrillation-atrial-flutter-cliff.pdf"
+    note: 0.00071 male / 0.00023 female per person-year; none in flight; most common atrial arrhythmia in astronauts on the ground.

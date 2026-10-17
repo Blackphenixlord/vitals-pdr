@@ -1,0 +1,67 @@
+id: epistaxis
+name: Nosebleed
+aka: [epistaxis, bloody nose, nose bleed]
+category: ent
+urgency: monitor
+# NASA IMM baseline (2020, space adaptation): 6 events / 807 crew = 0.74% of
+# crew in the first 5 days of flight; 14 cases total in the Shuttle program.
+# Prior kept in the KB's calibrated range, IMM number recorded here.
+prior: 0.03
+
+description: >
+  Bleeding from the nose. About 9 in 10 nosebleeds come from the front of the
+  nose and stop with firm pinching. Bleeding from the back of the nose is
+  heavier, runs down the throat, and is harder to stop.
+
+microgravity_note: >
+  The fluid shift pushes blood toward the head in the first days of flight,
+  swelling the vessels inside the nose, and ISS air is dry (around 47%
+  humidity), which cracks the lining. On orbit blood does not drip out of the
+  nose - it forms floating droplets and clings to the face, and a crewmember
+  can swallow a lot of it without noticing, which then causes nausea. Lean
+  the head FORWARD, never back, and catch the droplets so they do not drift
+  into equipment or other crew's eyes.
+
+findings:
+  - finding: nosebleed
+    weight: 4.0
+    absent_weight: -3.0
+    required: true
+    note: >
+      Blood from the nose IS the diagnosis, so the weight is near the top of
+      the range - otherwise near-universal fluid-shift congestion (base rate
+      0.45) outranks the bleed it caused. No blood, not a nosebleed.
+  - finding: nose_dry_or_picked
+    weight: 1.2
+    note: Dry air, picking and hard blowing are the usual triggers.
+  - finding: nasal_congestion
+    weight: 0.6
+    note: Fluid-shift congestion swells the nasal vessels.
+  - finding: bleeding_uncontrolled
+    weight: 1.0
+    note: Bleeding that will not stop after 15-20 minutes of pressure - red flag.
+  - finding: bleeding_down_throat
+    weight: 0.8
+    note: Suggests a bleed from the back of the nose - harder to stop, red flag.
+  - finding: presyncope
+    weight: 0.4
+    note: Lightheadedness after a nosebleed means real blood loss.
+  - finding: head_strike
+    weight: 0.6
+    note: Trauma can cause it, but then the head injury matters more.
+
+red_flags: [bleeding_uncontrolled, bleeding_down_throat, presyncope]
+
+recommend:
+  - Sit or hold position with the head tilted FORWARD, not back, so blood is not swallowed.
+  - Pinch the soft part of the nose firmly and continuously for 15 minutes by the clock - do not let go to check.
+  - Catch blood with gauze or a towel so droplets do not float into equipment or eyes.
+  - Once stopped, use saline spray or gel to keep the nose moist and avoid blowing it for 24 hours.
+  - Contact ground medical if it is still bleeding after 20 minutes of pressure, blood runs down the throat, or the crewmember feels lightheaded - the kit has nasal packing.
+
+differential: [head_injury, sinonasal_congestion]
+
+sources:
+  - title: "Nose Bleed (space adaptation) - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/nose-bleed-space-adaptation-cliff.pdf"
+    note: 6/807 crew in flight days 1-5; anterior 90%, posterior 10%; fluid shift and low ISS humidity as risk factors.

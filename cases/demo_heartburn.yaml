@@ -1,0 +1,14 @@
+title: "FD 30 - heartburn after dinner, antacid helps"
+narrative: >
+  Burning behind my breastbone after dinner, sour taste coming up. Tums
+  helped. Not on exercise, does not go to my arm, not short of breath.
+expect_top: indigestion_reflux
+observations:
+  heartburn: true
+  sour_taste_regurgitation: true
+  worse_after_eating: true
+  relieved_by_antacid: true
+  chest_pain_on_exertion: false
+  pain_radiates_arm_jaw: false
+  shortness_of_breath: false
+  mission_elapsed_days: 30

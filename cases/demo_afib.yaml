@@ -1,0 +1,13 @@
+title: "FD 140 - irregular racing heart and lightheaded (must escalate)"
+narrative: >
+  My heart is fluttering and the pulse feels irregular, all over the place.
+  I feel lightheaded and a bit short of breath. Not after landing.
+expect_top: atrial_fibrillation
+expect_escalate: true
+observations:
+  irregular_heartbeat: true
+  palpitations: true
+  presyncope: true
+  shortness_of_breath: true
+  recent_gravity_transition: false
+  mission_elapsed_days: 140

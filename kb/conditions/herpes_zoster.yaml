@@ -1,0 +1,63 @@
+id: herpes_zoster
+name: Shingles
+aka: [herpes zoster, zoster, shingles, VZV reactivation]
+category: infectious
+urgency: monitor
+# NASA IMM baseline (2020): 3 events / 45.49 person-years = 0.066 per
+# person-year (Bayesian alternative 0.0029). No confirmed clinical case in the
+# US program, but the virus is found in 30% of crew saliva samples in flight.
+prior: 0.005
+
+description: >
+  The chickenpox virus waking up in a nerve. Burning, tingling or pain in one
+  patch of skin, then a band of blisters on ONE side of the body a few days
+  later. Painful but usually not dangerous, except near the eye.
+
+microgravity_note: >
+  Spaceflight weakens the part of the immune system that keeps sleeping
+  viruses in check. NASA found the chickenpox/shingles virus in 30% of crew
+  saliva samples during and after flight with no symptoms at all - so the
+  virus is active on orbit even when nobody is sick. A clinical case has not
+  yet been confirmed in the US program, which is why the rule is rare but
+  present. The pain often comes days BEFORE the rash, and can be mistaken
+  for a pulled muscle, a kidney stone or even the heart depending on where it
+  is.
+
+findings:
+  - finding: rash_one_side_band
+    weight: 2.8
+    note: A strip of rash on one side only is the classic sign.
+  - finding: skin_pain_before_rash
+    weight: 2.0
+  - finding: blistering
+    weight: 1.2
+  - finding: rash
+    weight: 0.6
+  - finding: itching
+    weight: 0.2
+  - finding: rash_near_eye
+    weight: 1.0
+    note: Shingles near the eye can damage sight - red flag.
+  - finding: fever
+    weight: 0.3
+  - finding: rash_where_skin_rubs
+    weight: -1.6
+    note: A rash under straps or where clothing rubs is a friction rash.
+  - finding: hives
+    weight: -1.6
+    note: Raised itchy welts all over are allergy, not shingles.
+
+red_flags: [rash_near_eye]
+
+recommend:
+  - Ask ground medical about the antiviral in the kit - it works best within 3 days of the rash appearing.
+  - Keep the blisters covered and clean; do not share towels.
+  - Pain relief from the kit as directed; the nerve pain can be severe.
+  - Contact ground medical now if the rash is on the forehead, near the eye or on the tip of the nose, or if vision changes.
+
+differential: [skin_rash, allergic_reaction, msk_back_pain_adaptation]
+
+sources:
+  - title: "Herpes Zoster Reactivation (Shingles) - NASA Integrated Medical Model CliFF Baseline (2020)"
+    url: "https://www.nasa.gov/wp-content/uploads/2026/08/herpes-zoster-reactivation-shingles-cliff.pdf"
+    note: 0.066 per person-year; 30% of in-flight saliva samples positive for VZV with no symptoms; ophthalmic involvement a worst case.

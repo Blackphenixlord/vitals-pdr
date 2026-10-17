@@ -1,0 +1,13 @@
+title: "FD 150 - band of blisters on one side after burning skin"
+narrative: >
+  My side was burning for two days before anything showed up, now there's a
+  strip of blisters wrapping around my ribs on the right only. Not near my eye.
+expect_top: herpes_zoster
+observations:
+  rash_one_side_band: true
+  skin_pain_before_rash: true
+  blistering: true
+  rash: true
+  rash_near_eye: false
+  rash_where_skin_rubs: false
+  mission_elapsed_days: 150

@@ -1,0 +1,348 @@
+<!doctype html>
+<!--
+  VITALS - doctor screen.
+  The doctor reviews what VITALS told a crewmember and replies: agree,
+  disagree, or their own read. The reply goes to the ground crew, who check
+  it and release it to the astronaut.
+
+  THIS PAGE ONLY EVER RECEIVES THE PACKET the ground crew built - the server
+  never sends a doctor the full case, so anything the ground crew withheld is
+  not in this browser at all (cases.py, /api/doctor/case).
+
+  RULES (UI_ACCEPTANCE_CRITERIA.md): level is a WORD plus a color; no
+  percentages; tap targets 44px+; works offline as one file.
+  Refreshes the queue every 5 seconds.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VITALS - doctor</title>
+<style>
+  :root {
+    --bg: #14172e; --surface: #1c2042; --raised: #272c57; --raised-2: #323870; --line: #3a4078;
+    --ink: #eef0fb; --muted: #aab0dc; --signal: #8cc8ff; --signal-ink: #0b1830;
+    --error-bg: #3d1f2a; --error-ink: #ffb8b8;
+    --emergency-bg: #d7262b; --emergency-ink: #ffffff;
+    --urgent-bg: #f28b00;    --urgent-ink: #14100a;
+    --monitor-bg: #fdd663;   --monitor-ink: #14100a;
+    --routine-bg: #81c995;   --routine-ink: #0b1a10;
+    --none-bg: #6c7090;      --none-ink: #ffffff;
+    --display: Bahnschrift, "DIN Alternate", "Barlow", "Roboto Condensed", system-ui, sans-serif;
+    --body: "Segoe UI", system-ui, Roboto, "Helvetica Neue", sans-serif;
+    --r-sm: 8px; --r-md: 14px; --r-lg: 20px;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 var(--body); }
+  a { color: var(--signal); }
+  button, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+  .app { display: flex; flex-direction: column; height: 100vh; }
+  .topbar { display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 10px 24px;
+            background: var(--surface); border-bottom: 1px solid var(--line); }
+  .topbar .title { font: 600 20px/1.2 var(--display); letter-spacing: 2px; }
+  .topbar .sub { color: var(--muted); font-size: 14px; }
+  .topbar .who { margin-left: auto; color: var(--muted); font-size: 15px; text-align: right; }
+  .topbar .who b { color: var(--ink); }
+  .btn { min-height: 48px; padding: 0 18px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--raised); }
+  .btn:hover { border-color: var(--signal); }
+  .btn.primary { background: var(--signal); color: var(--signal-ink); border-color: var(--signal); font-weight: 650; }
+
+  .main { flex: 1; min-height: 0; display: flex; }
+  .list { flex: 0 0 320px; overflow-y: auto; padding: 14px 12px; border-right: 1px solid var(--line); background: var(--surface); }
+  .list h2 { margin: 4px 6px 10px; font: 600 18px var(--display); }
+  .case-row { display: block; width: 100%; text-align: left; margin-bottom: 8px; padding: 12px 14px;
+              border-radius: var(--r-md); border: 1px solid transparent; background: var(--raised); }
+  .case-row:hover { background: var(--raised-2); }
+  .case-row.current { border-color: var(--signal); }
+  .case-row .line { margin-top: 4px; font-size: 15px; }
+  .case-row .meta { color: var(--muted); font-size: 14px; }
+  .waiting { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 13px; font-weight: 650;
+             border: 1px solid var(--monitor-bg); color: var(--monitor-bg); }
+  .done { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 13px; border: 1px solid var(--line); }
+  .empty { color: var(--muted); padding: 8px; }
+
+  .lvl { display: inline-block; min-width: 92px; padding: 2px 10px; border-radius: var(--r-sm);
+         font: 700 14px/1.6 var(--display); letter-spacing: 1px; text-align: center; }
+  .lvl.emergency { background: var(--emergency-bg); color: var(--emergency-ink); }
+  .lvl.urgent { background: var(--urgent-bg); color: var(--urgent-ink); }
+  .lvl.monitor { background: var(--monitor-bg); color: var(--monitor-ink); }
+  .lvl.routine { background: var(--routine-bg); color: var(--routine-ink); }
+  .lvl.none { background: var(--none-bg); color: var(--none-ink); }
+
+  .detail { flex: 1; min-width: 0; overflow-y: auto; padding: 22px 28px 60px; }
+  .detail > * { max-width: 860px; }
+  section.box { margin-top: 18px; padding: 18px 20px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); }
+  section.box > h2 { margin: 0 0 12px; font: 600 19px/1.3 var(--display); color: var(--signal); }
+  .muted { color: var(--muted); } .small { font-size: 14px; }
+  .packet h3 { margin: 16px 0 4px; font: 600 16px var(--display); }
+  .packet h3:first-child { margin-top: 0; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 15px; }
+  .kv dt { color: var(--muted); } .kv dd { margin: 0; }
+  .cond { padding: 8px 0; border-top: 1px dashed var(--line); }
+  .cond .nm { font-weight: 650; }
+  .cond ul { margin: 4px 0; padding-left: 22px; }
+
+  .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .choice { min-height: 64px; padding: 8px 12px; border-radius: var(--r-md); border: 2px solid var(--line);
+            background: var(--raised); font-weight: 650; }
+  .choice[aria-pressed="true"] { border-color: var(--signal); background: var(--raised-2); }
+  .choice span { display: block; font-weight: 400; font-size: 14px; color: var(--muted); }
+  textarea { width: 100%; min-height: 140px; padding: 10px 12px; border-radius: var(--r-md);
+             border: 1px solid var(--line); background: var(--raised); resize: vertical; }
+  textarea:focus { outline: 2px solid var(--signal); border-color: var(--signal); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+  .msg { margin-top: 10px; padding: 10px 14px; border-radius: var(--r-md); font-size: 15px; }
+  .msg.err { background: var(--error-bg); color: var(--error-ink); }
+  .msg.ok { background: #1d3a2a; color: #c9f2d6; }
+  .verdict { display: inline-block; padding: 4px 12px; border-radius: 999px; background: var(--raised-2); font-weight: 650; }
+
+  @media (max-width: 860px) { .list { flex-basis: 240px; } .detail { padding: 16px; } }
+  @media (max-width: 640px) { .choices { grid-template-columns: 1fr; } }
+  @media print {
+    body { background: #fff; color: #000; font-size: 12pt; }
+    .topbar, .list, .no-print { display: none !important; }
+    .app, .main, .detail { display: block; height: auto; overflow: visible; padding: 0; }
+    section.box { border: 0; background: #fff; padding: 0; }
+    .lvl { border: 1px solid #000; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div>
+      <div class="title">VITALS - DOCTOR</div>
+      <div class="sub">Diagnosis + decision support · a doctor has the final say</div>
+    </div>
+    <div class="who" id="who"></div>
+    <button class="btn" id="lock" type="button">Lock</button>
+  </header>
+  <div class="main">
+    <nav class="list" aria-label="Cases sent to you">
+      <h2>Sent to you</h2>
+      <div id="cases"><p class="empty">Loading…</p></div>
+    </nav>
+    <main class="detail" id="detail">
+      <p class="muted">Cases the ground crew sends you appear on the left. You only see what they chose to share.</p>
+    </main>
+  </div>
+</div>
+
+<script>
+const LEVEL_WORDS = { emergency: "EMERGENCY", urgent: "URGENT", monitor: "MONITOR", routine: "ROUTINE", none: "NO MATCH" };
+const STRENGTH_WORDS = { high: "Strong match", moderate: "Possible", low: "Unlikely" };
+// The doctor's own words on the buttons; the server stores the verdict key.
+const CHOICES = {
+  agree:    ["I agree", "VITALS' advice is right"],
+  disagree: ["I disagree", "Say what to do instead"],
+  own:      ["My own read", "Add your own assessment"],
+};
+const REFRESH_SECONDS = 5;
+const IDLE_LOCK_MINUTES = 15;
+
+const $ = id => document.getElementById(id);
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined && text !== null) n.textContent = text;
+  return n;
+}
+const when = t => new Date(t * 1000).toLocaleString();
+const levelChip = l => el("span", "lvl " + (l || "none"), LEVEL_WORDS[l] || LEVEL_WORDS.none);
+
+function backToLogin() {
+  let page = "/";
+  try { page = sessionStorage.getItem("vitals-login") || "/"; } catch (e) {}
+  location.href = page;
+}
+async function getJSON(url) {
+  const r = await fetch(url);
+  if (r.status === 401) { backToLogin(); throw new Error("logged out"); }
+  return r.json();
+}
+async function postJSON(url, body) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (r.status === 401) { backToLogin(); throw new Error("logged out"); }
+  return r.json();
+}
+
+async function loadMe() {
+  const r = await fetch("/api/me");
+  if (r.status === 401) return backToLogin();
+  const me = await r.json();
+  if (me.role !== "doctor") return backToLogin();
+  $("who").innerHTML = "";
+  $("who").appendChild(el("b", null, me.name));
+  $("who").appendChild(el("div", null, "Doctor"));
+}
+async function lock() { await fetch("/api/logout", { method: "POST", body: "{}" }); backToLogin(); }
+$("lock").onclick = lock;
+let idle = null;
+function resetIdle() { clearTimeout(idle); idle = setTimeout(lock, IDLE_LOCK_MINUTES * 60000); }
+["click", "keydown", "touchstart"].forEach(e => document.addEventListener(e, resetIdle));
+
+let queue = [];
+let currentId = null;
+let currentSent = null;
+let typing = false;
+
+async function loadQueue() {
+  try {
+    const data = await getJSON("/api/doctor/cases");
+    if (!data.ok) return;
+    queue = data.cases;
+    drawQueue();
+    const cur = queue.find(c => c.id === currentId);
+    if (cur && cur.sent_at !== currentSent && !typing) openCase(currentId);   // ground crew re-sent it
+  } catch (e) {}
+}
+
+function drawQueue() {
+  const box = $("cases");
+  box.innerHTML = "";
+  if (!queue.length) { box.appendChild(el("p", "empty", "Nothing has been sent to you yet.")); return; }
+  queue.forEach(c => {
+    const row = el("button", "case-row" + (c.id === currentId ? " current" : ""));
+    row.type = "button";
+    row.appendChild(levelChip(c.level));
+    row.appendChild(el("div", "line", c.headline || "Case"));
+    const meta = el("div", "meta");
+    meta.appendChild(c.status === "with_doctor" ? el("span", "waiting", "Waiting for you") : el("span", "done", "Replied"));
+    meta.appendChild(document.createTextNode(`  sent ${when(c.sent_at)}`));
+    row.appendChild(meta);
+    row.onclick = () => openCase(c.id);
+    box.appendChild(row);
+  });
+}
+
+async function openCase(id) {
+  currentId = id;
+  drawQueue();
+  const data = await getJSON(`/api/doctor/case?id=${encodeURIComponent(id)}`);
+  if (!data.ok) { $("detail").textContent = data.error; return; }
+  currentSent = data.case.sent_at;
+  drawCase(data.case, data.verdicts);
+}
+
+function drawCase(c, verdicts) {
+  const d = $("detail");
+  d.innerHTML = "";
+  const top = el("section", "box");
+  top.appendChild(el("h2", null, "Case for your review"));
+  top.appendChild(el("p", "small muted", `Sent by the ground crew ${when(c.sent_at)}. Case ${c.id}.`));
+  top.appendChild(drawPacket(c.content));
+  const pr = el("div", "actions no-print");
+  const print = el("button", "btn", "Print / save as PDF"); print.type = "button"; print.onclick = () => window.print();
+  pr.appendChild(print); top.appendChild(pr);
+  d.appendChild(top);
+  d.appendChild(reviewBox(c, verdicts));
+}
+
+function reviewBox(c, verdicts) {
+  const box = el("section", "box no-print");
+  box.appendChild(el("h2", null, c.review ? "Your reply (you can change it until the ground crew releases it)" : "Your reply"));
+  if (c.review) {
+    box.appendChild(el("span", "verdict", verdicts[c.review.verdict]));
+    box.appendChild(el("p", "small muted", `Sent ${when(c.review.at)}`));
+  }
+  if (c.status === "released") {
+    box.appendChild(el("p", null, "The ground crew checked your reply and released it to the crewmember."));
+    if (c.review && c.review.note) box.appendChild(el("p", null, c.review.note));
+    return box;
+  }
+  let chosen = c.review ? c.review.verdict : null;
+  const choices = el("div", "choices");
+  Object.keys(verdicts).forEach(key => {
+    const [words, help] = CHOICES[key] || [verdicts[key], ""];
+    const b = el("button", "choice", words); b.type = "button";
+    b.appendChild(el("span", null, help));
+    b.setAttribute("aria-pressed", String(key === chosen));
+    b.onclick = () => {
+      chosen = key;
+      choices.querySelectorAll(".choice").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    };
+    choices.appendChild(b);
+  });
+  box.appendChild(choices);
+  box.appendChild(el("label", "small muted", "Your note to the crew (needed for disagree or your own read)"));
+  const note = el("textarea");
+  note.value = c.review ? c.review.note : "";
+  note.placeholder = "What should the crewmember do? Anything VITALS missed?";
+  note.onfocus = () => typing = true; note.onblur = () => typing = false;
+  box.appendChild(note);
+  const msg = el("div", "msg"); msg.hidden = true;
+  const actions = el("div", "actions");
+  const send = el("button", "btn primary", "Send reply to ground crew"); send.type = "button";
+  send.onclick = async () => {
+    msg.hidden = false;
+    if (!chosen) { msg.className = "msg err"; msg.textContent = "Choose agree, disagree, or your own read."; return; }
+    send.disabled = true;
+    const r = await postJSON("/api/doctor/review", { id: c.id, verdict: chosen, note: note.value });
+    send.disabled = false;
+    msg.className = "msg " + (r.ok ? "ok" : "err");
+    msg.textContent = r.ok ? "Sent. The ground crew will check it and pass it on." : r.error;
+    if (r.ok) { typing = false; loadQueue(); }
+  };
+  actions.appendChild(send);
+  box.appendChild(actions);
+  box.appendChild(msg);
+  return box;
+}
+
+// Same shape as drawPacket in ground.html.
+function drawPacket(p) {
+  const box = el("div", "packet");
+  box.appendChild(el("h3", null, "Crewmember"));
+  box.appendChild(el("p", null, p.crew_name || "Name withheld by ground crew"));
+  if (p.emergency_access) box.appendChild(el("p", "small", "Asked through emergency access (not logged in)."));
+  const prof = Object.entries(p.profile || {});
+  if (prof.length) {
+    const kv = el("dl", "kv");
+    prof.forEach(([k, v]) => { kv.appendChild(el("dt", null, k)); kv.appendChild(el("dd", null, v)); });
+    box.appendChild(kv);
+  }
+  if (p.withheld && p.withheld.length) box.appendChild(el("p", "small muted", `The ground crew withheld: ${p.withheld.join(", ")}`));
+  if (p.note_from_ground) { box.appendChild(el("h3", null, "Note from ground crew")); box.appendChild(el("p", null, p.note_from_ground)); }
+  if (p.transcript) {
+    box.appendChild(el("h3", null, "What the crewmember said"));
+    p.transcript.forEach(t => box.appendChild(el("p", null, `${when(t.at)}: ${t.text}`)));
+  }
+  if (p.vitals_answer) {
+    const v = p.vitals_answer;
+    box.appendChild(el("h3", null, "VITALS diagnosis and what else it considered"));
+    const row = el("p"); row.appendChild(levelChip(p.level));
+    if (v.escalate) row.appendChild(document.createTextNode("  Told to contact ground medical now"));
+    box.appendChild(row);
+    if (v.escalation_reason) box.appendChild(el("p", "small", `Why: ${v.escalation_reason}`));
+    v.differential.forEach((cnd, i) => {
+      const cb = el("div", "cond");
+      cb.appendChild(el("div", "nm", `${i === 0 ? (cnd.confidence === "low" ? "Possible diagnosis: " : "Diagnosis: ") : ""}${cnd.name} - ${STRENGTH_WORDS[cnd.confidence] || "Possible"} (${cnd.urgency})`));
+      if (cnd.reasoning) cb.appendChild(el("div", null, cnd.reasoning));
+      if (cnd.supporting && cnd.supporting.length) cb.appendChild(el("div", "small muted", "For: " + cnd.supporting.join("; ")));
+      if (cnd.against && cnd.against.length) cb.appendChild(el("div", "small muted", "Against: " + cnd.against.join("; ")));
+      if (cnd.recommend && cnd.recommend.length) { const ul = el("ul"); cnd.recommend.forEach(r => ul.appendChild(el("li", "small", r))); cb.appendChild(ul); }
+      (cnd.sources || []).forEach(s => { const a = el("a", "small", s.title || s.url); a.href = s.url; a.target = "_blank"; cb.appendChild(a); cb.appendChild(el("br")); });
+      box.appendChild(cb);
+    });
+    if (!v.differential.length) box.appendChild(el("p", "muted", "Nothing in the knowledge base fit."));
+    if (v.uncertainty) box.appendChild(el("p", "small", `VITALS was least sure about: ${v.uncertainty}`));
+  }
+  if (p.understood) {
+    box.appendChild(el("h3", null, "What VITALS understood"));
+    box.appendChild(el("p", "small", p.understood.map(f => `${f.label}: ${f.value}`).join("; ") || "Nothing specific."));
+  }
+  return box;
+}
+
+loadMe();
+loadQueue();
+setInterval(loadQueue, REFRESH_SECONDS * 1000);
+resetIdle();
+</script>
+</body>
+</html>
