@@ -4,30 +4,28 @@ Official milestones (HUNCH Generic Schedule + nasahunch.com/fdr):
 
 | Milestone | Date | Target |
 |---|---|---|
-| PDR — in person with NASA HUNCH, science-fair style | **~November 2026 — exact date not published; confirm with Michael Hayes** | 60–90% working prototype + tri-fold |
+| PDR — in person with NASA HUNCH, science-fair style | **Wednesday, October 21, 2026** | 60–90% working prototype + tri-fold |
 | CDR — NASA HUNCH selects national contenders | ~March 2027 | 90% prototype + tri-fold or laptop |
 | FDR — Johnson Space Center (invitation only) | **May 4–6, 2027** | 100% prototype + USB |
 
 Owners: **J** = Joshua · **Q** = Joaquin · **C** = Cruz · **All** = everyone.
-Every week, everyone: a D.A.A.N. entry for each day worked.
+The D.A.A.N. is optional on the HUNCH list — skipped this round.
 
-## Before PDR (week by week)
+## Before PDR — 4 days (Sat Oct 17 → Wed Oct 21)
 
-| Week of | Deliverable | Owner | Done when |
+| Day | Deliverable | Owner | Done when |
 |---|---|---|---|
-| Oct 19 | Confirm PDR date, team number, registration (closes Nov 1) | J | email from Hayes / Ms. Odoms |
-| Oct 19 | Re-run `vitals bench` on the 60-prompt bank, 3B and 8B; commit the dated output | J | file in `docs/bench/` |
-| Oct 19 | Start D.A.A.N.; back-fill nothing | All | daily entries exist |
-| Oct 19 | Fix the missed escalation: pain-only bends after EVA (DCS weights), re-run `vitals missions --advanced` | Q, J | A2 19/19 |
-| Oct 19 | Host the website, generate the QR code | J | QR scans to the live site |
-| Oct 26 | User testing round 1: 5 people, 3 symptoms × 5 phrasings (UI criteria §10) | C | `pdr/test_log/` filled in |
-| Oct 26 | Every missed phrasing → `patterns.py` + a test | J, C | tests pass |
-| Oct 26 | Review the weights and red flags on the 14 original conditions | Q | checklist signed in `KNOWLEDGE_BASE_FORMAT.md` |
-| Oct 26 | Paste Figma frames + whiteboard photos into Brainstorming 1/2 and file 09 | C | images in `pdr/img/` |
-| Nov 2 | Record the 4-min prototype video and 3-min presentation video | All | uploaded, linked from the site |
-| Nov 2 | Print and build the tri-fold | All | board assembled |
-| Nov 2 | Dry run: present to the class, collect questions | All | question list + answers |
-| Nov 9 | **PDR** (if it falls here) — bring laptop running `vitals serve` offline | All | — |
+| Sat 17 | Website + brochure built in Gamma; QR codes made; brainstorm boards; all docs | J (done with Claude) | ✅ in the repo |
+| Sun 18 | Record the 4-min prototype video (script: `14_video_scripts.md`) | J | uploaded, link on the website |
+| Sun 18 | Fix the missed escalation if time allows: pain-only bends after EVA (DCS weights) | Q, J | `vitals missions --advanced` A2 19/19 |
+| Mon 19 | Record the 3-min presentation video — each person takes a section | All | uploaded, link on the website |
+| Mon 19 | Ask Ms. Odoms for the team number; confirm registration (closes Nov 1) | J | number on the header board |
+| Mon 19 | Print: tri-fold board panels, header strip with QR, brochures (double-sided) | C | printed |
+| Tue 20 | Build the tri-fold; dry run the 3-minute talk; practice the live demo offline | All | one full run with no internet |
+| Tue 20 | Charge laptop; `docker compose up` or `vitals serve` tested on the demo laptop | J | answer shows with the network off |
+| **Wed 21** | **PDR** — laptop running VITALS offline, tri-fold, brochures, mission log printout | All | — |
+
+Pushed to after PDR: user testing round 1 (Cruz), Joaquin's weight review, re-running the 60-prompt bench.
 
 ## PDR → CDR (deliverables per month)
 

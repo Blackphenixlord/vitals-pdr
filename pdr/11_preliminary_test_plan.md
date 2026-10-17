@@ -21,7 +21,7 @@ performance and vignette testing. This plan maps each kind to something that exi
 | Integration — advanced missions | A1 model present; A2 every must-escalate prompt escalates through the real LLM path | `python -m vitals missions --advanced` | 0 missed | 🟡 PC 17 Oct: 18/19 — `mimic_sprain_vs_dcs` missed |
 | Vignette (benchmark) | 60 complaints written the way people talk: classic, mimics, phrasing, nothing-fits, off-topic | `python -m vitals bench` | P3 = 0, P4 ≥ 80%, P5 ≥ 70% | 🟡 Sep: 0 / 73–85% / 0–14% |
 | Expert vignette | A clinician answers the same vignettes blind; compare | spreadsheet | agreement recorded | 🔴 needs a reviewer |
-| User acceptance | ≥5 people who didn't build it; 3 symptoms × 5 natural phrasings; time to read the level (≤3 s) | `UI_ACCEPTANCE_CRITERIA.md` §10, log in `pdr/test_log/` | criteria 1–9 checked | 🔴 Cruz, week of Oct 26 |
+| User acceptance | ≥5 people who didn't build it; 3 symptoms × 5 natural phrasings; time to read the level (≤3 s) | `UI_ACCEPTANCE_CRITERIA.md` §10, log in `pdr/test_log/` | criteria 1–9 checked | 🔴 Cruz, after PDR |
 | Performance | Time per answer, desktop and Jetson | bench timing, mission log | ≤10 s desktop, ≤15 s Jetson | 🟡 desktop ✅, Jetson not run |
 | Offline | Network cable pulled; Docker with no internet route | manual + Docker test | answers, page loads, no CDN | ✅ verified 26 Sep (Docker) |
 | Security | Wrong PIN, lockout, role checks, one crewmember can't write to another's case | `test_accounts.py`, `test_server.py`, `test_cases.py`, B6 | all pass | ✅ (redaction: planned with the ground crew screen) |

@@ -36,4 +36,6 @@ it, on what screens, and how a doctor fits in when the link is delayed.**
 - "What VITALS understood" list with a **Wrong?** button on each item.
 - Every condition shows its **source link**, from the KB.
 
-> 🟡 **Team:** add Cruz's paper/Figma sketches of the three screens here, dated.
+## The board
+
+![Brainstorm 2 board: screens, hardware and input options as sticky notes, picks circled](img/brainstorm_2.png)

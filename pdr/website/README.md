@@ -1,16 +1,14 @@
 # Website
 
-`index.html` is the whole site — one page plus `img/` and `emblem.svg`, works on a phone. It uses the same colors, fonts and emblem as the app and the brochure. Copy the whole `website/` folder when you host it.
+**Live:** https://gamma.app/docs/VITALS-o20a7se48kbm9qr — built in Gamma (theme: Stardust), same look as the brochure.
 
-## Hosting it (pick one)
+- `qr.png` → the website (header board + brochure)
+- `qr_specs.png` → the website's Technical specifications section (brochure)
 
-The repo is **private**, so GitHub Pages on this repo needs a paid plan (or GitHub's free student
-pack). Simplest options:
+Edit the site in Gamma. If the link ever changes: `python pdr/website/make_qr.py <new-url>`, then
+re-place the QR codes on the brochure and header board.
 
-1. **Your existing site** — copy the `website/` folder into the `Blackphenixlord.github.io` repo as
-   `vitals/` → `https://blackphenixlord.github.io/vitals/`.
-2. **Google Sites** — the HUNCH list allows a Google Site; paste the sections in.
+Images used on the site and brochure are hosted from
+`github.com/Blackphenixlord/Blackphenixlord.github.io/tree/master/vitals/img` (public).
 
-Then: `python pdr/website/make_qr.py <url>` → `qr.png` (header board + brochure) and `qr_specs.png` (brochure), then `python pdr/brochure/make_pdf.py`. Scan them before printing.
-
-Before PDR: replace the Videos line with the two uploaded video links.
+Before PDR: add the two video links to the site once they're uploaded.

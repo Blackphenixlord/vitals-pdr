@@ -4,12 +4,12 @@ The strip across the top of the tri-fold. The requirement list asks for exactly 
 
 | Field | Value |
 |---|---|
-| **School** | `[ school name ]` |
-| **Team number** | `[ HUNCH team number — not assigned yet, ask Ms. Odoms / Michael Hayes ]` |
+| **School** | South Texas ISD Science Academy — Mercedes, Texas |
+| **Team number** | `[ ask Ms. Odoms — she registers the team with HUNCH ]` |
 | **NASA project name** | Medical Diagnostic System with Machine Learning & Artificial Intelligence (From a non-Medical Person's Perspective) |
 | **Team project name** | **VITALS** — Team **TETHER** |
 | **Names** | Joshua Collado (project lead, main coder) · Joaquin (medical research, co-coder) · Cruz (UI design, user testing) |
-| **QR code** | → the website (see [website/](website/)). Make it with `python pdr/website/make_qr.py <url>` once the site is hosted. |
+| **QR code** | → the website — `website/qr.png` |
 
 Teacher: Ms. Sylvia Odoms · Regional mentor: Michael Hayes, Voyager Technologies
 
@@ -17,7 +17,7 @@ Teacher: Ms. Sylvia Odoms · Regional mentor: Michael Hayes, Voyager Technologie
 
 ```
 +--------------------------------------------------------------------------------+
-|  [school name]   ·   Team [#]                                        [ QR ]   |
+|  South Texas ISD Science Academy · Mercedes, TX · Team [#]          [ QR ]   |
 |  VITALS  —  Team TETHER                                                        |
 |  Medical Diagnostic System with ML & AI (From a non-Medical Person's View)    |
 |  Joshua Collado · Joaquin · Cruz                                               |

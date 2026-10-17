@@ -15,10 +15,9 @@ git history, noted on the right.
 | E | **Local LLM grounded in the knowledge base** | Extract findings → retrieve the relevant cited KB pages → the local model reasons over *those pages only* → code checks the reply | Conversational **and** space-specific **and** checkable | Slower than rules; still needs a backstop for safety | **Chosen** (26 Sep) — see decision matrix |
 | F | **Decision tree / flowchart** | Fixed question sequence per body area | Simple, predictable | Long interviews; one wrong branch = wrong answer; no free text | The `vitals interview` command keeps a guided mode |
 
-## Team notes
+## The board
 
-> 🟡 **Team:** paste photos of the whiteboard / paper sketches from the session here, with the date.
-> The board wants evidence the team brainstormed, and the D.A.A.N. entry for that day should match.
+![Brainstorm 1 board: six options as sticky notes, A and C crossed out, E circled](img/brainstorm_1.png)
 
 Ideas that came out of this round and were kept:
 - The model **can only name conditions we handed it** (dropped and reported if it invents one).
