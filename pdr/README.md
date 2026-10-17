@@ -1,14 +1,15 @@
-# VITALS — PDR package (60% review)
+# VITALS — design-review documents
 
 **Team TETHER · NASA HUNCH 2026–27 · Software & Technology Hardware Engineering plus Robotics**
 **NASA project:** SFT 2025-26-27 Medical Diagnostic System with Machine Learning & Artificial Intelligence (From a non-Medical Person's Perspective)
 **Team project:** VITALS
 
-This folder is everything on the official **2026-27 Requirement List → "PDR - List - TRI-Fold, 60% Plus Working Prototype"**
-([HUNCH Generic Schedule PDF](https://cdn.nasahunch.com/Generic_Schedule_1_7b74852edf.pdf)), one file per item,
-in the order the list gives them. The code in the rest of this repo is the working prototype.
+One file per item on the HUNCH 2026-27 PDR list
+([Generic Schedule PDF](https://cdn.nasahunch.com/Generic_Schedule_1_7b74852edf.pdf)), in the order the list gives
+them. The code in the rest of this repo is the working prototype: **the astronaut screen works; the ground crew
+screen, doctor screen, sensors and the rest are shown in the app as planned** (see the main README).
 
-Status key: ✅ ready · 🟡 drafted here, team must finish · 🔴 the team has to make it (a person, a camera, or a decision)
+Status key: ✅ ready · 🟡 drafted here, team must finish · 🔴 the team has to make it (a person, a camera, or a decision) · 🔵 planned for a later version
 
 ## The checklist
 
@@ -40,7 +41,7 @@ Status key: ✅ ready · 🟡 drafted here, team must finish · 🔴 the team ha
 ```bash
 pip install -e ".[dev]"
 python -m vitals missions          # the PDR basic missions - offline, ~1 second
-python -m pytest -q                # 266 tests
+python -m pytest -q                # 262 tests
 ```
 
 With ollama running and a model pulled, `python -m vitals missions --advanced` adds the

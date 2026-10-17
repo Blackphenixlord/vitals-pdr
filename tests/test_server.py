@@ -74,19 +74,32 @@ def test_login_page_is_served_at_root(server):
 
 def test_every_page_says_it_is_not_a_diagnosis(server):
     """This framing is not decoration. It must survive any restyle."""
-    for page in ("/", "/astronaut", "/dev"):
+    for page in ("/", "/astronaut", "/ground", "/doctor", "/status"):
         body = urlopen(server + page).read().decode().lower()
         assert "a doctor has the final say" in body, page
 
 
 def test_pages_say_that_nothing_has_been_measured(server):
-    dev = urlopen(server + "/dev").read().decode().lower()
-    assert "no instruments attached" in dev
-    assert "no vital sign has been measured" in dev
-
     astronaut = urlopen(server + "/astronaut").read().decode().lower()
     assert "no sensor connected" in astronaut
     assert "not connected" in astronaut
+
+
+def test_planned_screens_say_they_are_planned_and_show_no_data(server):
+    """This version ships the astronaut screen only. The rest says what it WILL do."""
+    for page in ("/ground", "/doctor", "/status"):
+        body = urlopen(server + page).read().decode()
+        assert "Planned - not in this version" in body, page
+        assert "fetch(" not in body, page          # it asks the server for nothing
+
+
+def test_planned_screens_have_no_api_behind_them(server):
+    for path in ("/api/ground/cases", "/api/doctor/cases", "/api/my/notes", "/api/status"):
+        try:
+            urlopen(server + path)
+            raise AssertionError(f"{path} should not exist in this version")
+        except HTTPError as exc:
+            assert exc.code == 404, path
 
 
 def test_every_ui_file_is_self_contained():

@@ -61,7 +61,7 @@
   <div class="card"><h3>Every answer has a source</h3><p>It can only name conditions we researched, and it never writes its own citations — they come from our knowledge base.</p></div>
   <div class="card"><h3>Safety backstop</h3><p>A rules engine checks every answer. If it says escalate, the answer escalates, whatever the AI said.</p></div>
   <div class="card"><h3>Fully offline</h3><p>Runs on an NVIDIA Jetson in the habitat with the language model built in. No internet, ever.</p></div>
-  <div class="card"><h3>A doctor in the loop</h3><p>Ground crew send a redacted case to a doctor and check the reply before the crew sees it.</p></div>
+  <div class="card"><h3>A doctor in the loop <em>(planned)</em></h3><p>Ground crew will send a redacted case to a doctor and check the reply before the crew sees it.</p></div>
 </div>
 
 <h2>How it works</h2>
@@ -74,19 +74,20 @@
   <span class="box">check the reply + rules backstop</span><span class="arrow">→</span>
   <span class="box">answer + sources</span>
 </div>
-<p>Three screens run from the one Jetson: the <strong>astronaut</strong> screen, the <strong>ground crew</strong> screen (sees everything, decides what the doctor sees), and the <strong>doctor</strong> screen (sees only the redacted case).</p>
+<p>The <strong>astronaut</strong> screen works today. Planned: a <strong>ground crew</strong> screen (sees everything, decides what the doctor sees) and a <strong>doctor</strong> screen (sees only the redacted case), all running from the one Jetson.</p>
 
 <h2>Where it stands (PDR)</h2>
 <div class="grid">
   <div class="card"><div class="big">35</div><p>spaceflight conditions, each with its sources</p></div>
-  <div class="card"><div class="big">266</div><p>automated tests passing</p></div>
+  <div class="card"><div class="big">262</div><p>automated tests passing</p></div>
   <div class="card"><div class="big">18 / 19</div><p>must-escalate complaints escalated through the AI (Oct 17) — the miss is our first fix</p></div>
   <div class="card"><div class="big">6 / 6</div><p>basic missions passing, every step logged</p></div>
 </div>
 <div class="tbl-wrap"><table>
   <tr><th>Part</th><th>Status</th></tr>
   <tr><td>Knowledge base, reasoning, safety backstop</td><td class="ok">Working</td></tr>
-  <tr><td>Astronaut, ground crew and doctor screens</td><td class="ok">Working</td></tr>
+  <tr><td>Astronaut screen</td><td class="ok">Working</td></tr>
+  <tr><td>Ground crew and doctor screens</td><td class="warn">Planned</td></tr>
   <tr><td>Saying “nothing fits” instead of guessing</td><td class="warn">Weakest area — next fix</td></tr>
   <tr><td>Running on the real Jetson</td><td class="warn">Board not flashed yet</td></tr>
   <tr><td>Heart rate, SpO₂, blood pressure, temperature sensors</td><td class="bad">Slots ready, hardware not wired — the screen says “not connected”, never a fake number</td></tr>

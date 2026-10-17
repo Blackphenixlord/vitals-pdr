@@ -37,5 +37,5 @@ who review what the system said, and a **doctor** who reviews a redacted case wh
   urgent it is, what to do next, and the source for every rule.
 - It **never misses an escalation** on the test bank — the number we care about most.
 - It runs **completely offline** on a Jetson in the habitat, with three screens: astronaut,
-  ground crew, doctor.
+  ground crew, doctor. *(Astronaut screen working now; the other two are planned.)*
 - It is honest: no invented vital signs, no invented percentages, no invented citations.

@@ -1,8 +1,12 @@
-"""The Jetson as the hub: astronaut -> ground crew -> doctor -> ground -> astronaut.
+"""Cases, roles and stations on the Jetson.
 
-These run the real HTTP server with the model faked out, so they prove the
-three screens can actually hand a case along - and that each role is held to
-its own data by the SERVER, not by which buttons a page happens to show.
+This version ships the astronaut screen only; the ground crew and doctor
+screens are planned. These tests run the real HTTP server with the model faked
+out and prove what exists today: every medical answer is saved as a case (ready
+for the planned screens), off-topic chat is not, one crewmember can't write to
+another's case, only the astronaut role can ask, and each Pi station only opens
+its own role. The case store's review rules (used by the planned screens) are
+tested directly.
 """
 
 import json
@@ -97,63 +101,6 @@ def ask(server, cookie, text, case_id=None):
     return reply
 
 
-# --- the whole loop ----------------------------------------------------------
-
-def test_full_loop_astronaut_ground_doctor_ground_astronaut(server):
-    astro = login(server, "astronaut")
-    reply = ask(server, astro, "pain in my right side in waves, blood in my urine")
-    case_id = reply["case_id"]
-    ask(server, astro, "no fever", case_id)          # same chat -> same case
-
-    ground = login(server, "ground")
-    _, listing = call(server, "/api/ground/cases", cookie=ground)
-    assert [c["id"] for c in listing["cases"]] == [case_id]
-    assert listing["cases"][0]["level"] in ("urgent", "emergency")
-    assert listing["cases"][0]["status"] == "open"
-
-    _, full = call(server, f"/api/ground/case?id={case_id}", cookie=ground)
-    case = full["case"]
-    assert len(case["turns"]) == 2
-    assert case["turns"][0]["answer"]["differential"][0]["id"] == "renal_stone"
-    assert "owner" not in case
-    assert "profile:Allergies" in case["redactable"]
-
-    status, sent = call(server, "/api/ground/send",
-                        {"id": case_id, "hidden": ["name", "profile:Allergies"],
-                         "note": "Please advise"}, ground)
-    assert status == 200 and sent["case"]["status"] == "with_doctor"
-
-    doctor = login(server, "doctor")
-    _, queue = call(server, "/api/doctor/cases", cookie=doctor)
-    assert queue["cases"][0]["id"] == case_id
-    _, packet = call(server, f"/api/doctor/case?id={case_id}", cookie=doctor)
-    content = packet["case"]["content"]
-    assert content["crew_name"] is None
-    assert "Allergies" not in content["profile"]
-    assert content["profile"]["Height"] == "178 cm"
-    assert "Alex Rivera" not in json.dumps(packet)
-    assert "Penicillin" not in json.dumps(packet)
-    assert content["note_from_ground"] == "Please advise"
-
-    # the astronaut sees nothing yet
-    _, notes = call(server, "/api/my/notes", cookie=astro)
-    assert notes["notes"] == []
-
-    status, _ = call(server, "/api/doctor/review",
-                     {"id": case_id, "verdict": "disagree", "note": "Ultrasound first."}, doctor)
-    assert status == 200
-    _, notes = call(server, "/api/my/notes", cookie=astro)
-    assert notes["notes"] == []                      # not until ground releases it
-
-    status, released = call(server, "/api/ground/release",
-                            {"id": case_id, "note": "Doctor says: ultrasound first."}, ground)
-    assert status == 200 and released["case"]["status"] == "released"
-
-    _, notes = call(server, "/api/my/notes", cookie=astro)
-    assert notes["notes"][0]["message"] == "Doctor says: ultrasound first."
-    assert notes["notes"][0]["verdict"] == "disagree"
-
-
 def test_cases_survive_a_server_restart(tmp_path):
     store = CaseStore(tmp_path)
     case = store.record_turn(None, crew={"account_id": "a", "name": "A", "profile": {}},
@@ -175,26 +122,17 @@ def test_off_topic_messages_do_not_create_cases(server):
     astro = login(server, "astronaut")
     _, reply = call(server, "/api/ask", {"complaint": "hi", "latest": "hi"}, astro)
     assert reply["scope"] == "greeting" and "case_id" not in reply
-    ground = login(server, "ground")
-    _, listing = call(server, "/api/ground/cases", cookie=ground)
-    assert listing["cases"] == []
+    assert Handler.cases.summaries() == []
 
 
-def test_a_doctor_cannot_read_the_full_case(server):
+def test_a_medical_answer_is_saved_as_a_case_for_the_planned_screens(server):
     astro = login(server, "astronaut")
-    case_id = ask(server, astro, "blood in my urine")["case_id"]
-    doctor = login(server, "doctor")
-    status, _ = call(server, f"/api/ground/case?id={case_id}", cookie=doctor)
-    assert status == 403
-    status, body = call(server, f"/api/doctor/case?id={case_id}", cookie=doctor)
-    assert status == 404                 # not sent yet - the doctor gets nothing
-
-
-def test_an_astronaut_cannot_use_ground_or_doctor_routes(server):
-    astro = login(server, "astronaut")
-    for path in ("/api/ground/cases", "/api/doctor/cases"):
-        assert call(server, path, cookie=astro)[0] == 403
-    assert call(server, "/api/doctor/review", {"id": "x", "verdict": "agree"}, astro)[0] == 403
+    reply = ask(server, astro, "pain in my right side in waves, blood in my urine")
+    case_id = reply["case_id"]
+    ask(server, astro, "no fever", case_id)          # same chat -> same case
+    case = Handler.cases.get(case_id)
+    assert len(case["turns"]) == 2
+    assert case["turns"][0]["answer"]["differential"][0]["id"] == "renal_stone"
 
 
 def test_ground_and_doctor_cannot_ask(server):
@@ -209,36 +147,7 @@ def test_one_astronaut_cannot_add_to_anothers_case(server):
     assert other != first
 
 
-def test_notes_only_go_to_the_crewmember_who_asked(server):
-    astro, other = login(server, "astronaut"), login(server, "astronaut2")
-    ground, doctor = login(server, "ground"), login(server, "doctor")
-    case_id = ask(server, astro, "blood in my urine")["case_id"]
-    call(server, "/api/ground/send", {"id": case_id, "hidden": []}, ground)
-    call(server, "/api/doctor/review", {"id": case_id, "verdict": "agree", "note": ""}, doctor)
-    call(server, "/api/ground/release", {"id": case_id, "note": "Doctor agrees."}, ground)
-    assert len(call(server, "/api/my/notes", cookie=astro)[1]["notes"]) == 1
-    assert call(server, "/api/my/notes", cookie=other)[1]["notes"] == []
-
-
-def test_ground_profile_edit_reaches_the_astronauts_profile(server):
-    astro = login(server, "astronaut")
-    case_id = ask(server, astro, "blood in my urine")["case_id"]
-    ground = login(server, "ground")
-    status, _ = call(server, "/api/ground/profile",
-                     {"id": case_id, "profile": {"Height": "179 cm", "Allergies": "None"}}, ground)
-    assert status == 200
-    _, me = call(server, "/api/me", cookie=astro)
-    assert me["profile"] == {"Height": "179 cm", "Allergies": "None"}
-
-
-# --- rules of the loop ----------------------------------------------------------
-
-def test_release_before_the_doctor_replies_is_refused(server):
-    case_id = ask(server, login(server, "astronaut"), "blood in my urine")["case_id"]
-    ground = login(server, "ground")
-    call(server, "/api/ground/send", {"id": case_id, "hidden": []}, ground)
-    status, body = call(server, "/api/ground/release", {"id": case_id, "note": "x"}, ground)
-    assert status == 400 and body["kind"] == "case"
+# --- case-store rules the planned screens will use --------------------------
 
 
 def test_disagreeing_needs_a_reason(tmp_path):
@@ -248,16 +157,6 @@ def test_disagreeing_needs_a_reason(tmp_path):
     store.send_to_doctor(case["id"], [], "", "G")
     with pytest.raises(CaseError):
         store.review(case["id"], "disagree", "  ", "D")
-
-
-def test_a_new_message_after_sending_is_flagged_for_ground(server):
-    astro = login(server, "astronaut")
-    case_id = ask(server, astro, "blood in my urine")["case_id"]
-    ground = login(server, "ground")
-    call(server, "/api/ground/send", {"id": case_id, "hidden": []}, ground)
-    ask(server, astro, "now I have a fever 38.9", case_id)
-    _, listing = call(server, "/api/ground/cases", cookie=ground)
-    assert listing["cases"][0]["new_since_sent"] is True
 
 
 # --- stations (the Pis) ---------------------------------------------------------
@@ -272,17 +171,6 @@ def test_a_station_only_accepts_its_own_role(server):
 def test_emergency_access_only_on_the_astronaut_station(server):
     assert call(server, "/api/emergency", {"station": "doctor"})[0] == 403
     assert call(server, "/api/emergency", {"station": "astronaut"})[0] == 200
-
-
-def test_status_page_has_no_names_or_medical_data(server):
-    astro = login(server, "astronaut")
-    ask(server, astro, "blood in my urine")
-    status, s = call(server, "/api/status")
-    assert status == 200
-    assert s["cases"]["total"] == 1
-    assert any(x["role"] == "astronaut" for x in s["stations"])
-    text = json.dumps(s)
-    assert "Alex Rivera" not in text and "urine" not in text
 
 
 @pytest.mark.parametrize("page", ["/ground", "/doctor", "/status", "/login?station=doctor"])

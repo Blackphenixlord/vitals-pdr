@@ -59,21 +59,23 @@ Each box is a **subsystem** in the mission log, and a file in `src/vitals/`:
 | RETRIEVAL | `retrieval.py` | Choose which KB pages the model may read |
 | REASON | `reason.py`, `ollama_client.py` | The local model answers; reply is validated |
 | ENGINE | `engine.py`, `scoring.py` | Deterministic cross-check + escalation backstop |
-| CASES | `cases.py` | Case file, redaction, review loop |
+| CASES | `cases.py` | Saves every answer as a case (redaction + doctor review loop: planned) |
 | ACCOUNTS | `accounts.py` | PINs, roles, sessions |
 | SERVER | `server.py` | HTTP shell — owns no medical logic |
 
-## System / deployment diagram (info flow between the three screens)
+## System / deployment diagram (info flow between the three screens) — planned
+
+Today the Jetson and the astronaut screen (Pi 1) work; Pi 2 and Pi 3 are the plan.
 
 ```mermaid
 flowchart LR
     subgraph Habitat
       J[Jetson Orin Nano<br/>VITALS server + Ollama + KB + cases + log]
-      P1[Pi 1 · Astronaut UI<br/>chat · profile · vitals · doctor notes]
+      P1[Pi 1 · Astronaut UI · WORKING<br/>chat · profile · vitals slots]
     end
     subgraph Ground
-      P2[Pi 2 · Ground crew UI<br/>every case, full detail<br/>edit profile · choose what to hide]
-      P3[Pi 3 · Doctor UI<br/>redacted packet only<br/>agree / disagree / own read]
+      P2[Pi 2 · Ground crew UI · PLANNED<br/>every case, full detail<br/>edit profile · choose what to hide]
+      P3[Pi 3 · Doctor UI · PLANNED<br/>redacted packet only<br/>agree / disagree / own read]
     end
     P1 -- 1. complaint --> J
     J -- 2. answer + escalation --> P1
@@ -86,8 +88,8 @@ flowchart LR
     J -- 9. doctor note --> P1
 ```
 
-Redaction happens **on the Jetson**, not in the browser: a hidden field never leaves the server, so
-it can't reach the doctor's Pi. (Proven by mission B6.)
+Planned rule: redaction happens **on the Jetson**, not in the browser, so a hidden field never leaves
+the server and can't reach the doctor's Pi.
 
 The three-screen flow is a **proof of concept** of how a delayed doctor review would work — the Pis
 are on one local network here, not a real 20-minute link.

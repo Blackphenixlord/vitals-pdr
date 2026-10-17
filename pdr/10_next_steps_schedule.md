@@ -38,7 +38,9 @@ Every week, everyone: a D.A.A.N. entry for each day worked.
 | Nov | Swap invented priors for NASA IMM numbers; re-bench | Q, J |
 | Dec | Real medical reviewer (nurse/EMT/doctor) checks the rules — biggest credibility gap | All |
 | Dec | MAX30102 heart rate + SpO₂ wired into `sensors.py` (after parts order is approved) | J + hardware teammate |
-| Jan | Three Pis running the three screens from the Jetson; full case loop on real hardware | J, C |
+| Dec | Build the ground crew screen (case list, profile edits, redaction, send to doctor) | J, C |
+| Jan | Build the doctor screen + Doctor notes on the astronaut screen; full case loop | J, C |
+| Jan | Three Pis running the three screens from the Jetson | J, C |
 | Jan | User testing round 2 on the Pis | C |
 | Feb | Voice input (NASA brief); temperature sensor; blood pressure if feasible | J |
 | Feb | Advanced missions on the Jetson, full test data + statistics from logs (CDR list) | J |

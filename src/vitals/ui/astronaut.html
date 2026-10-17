@@ -8,11 +8,12 @@
   THE RAIL (icons, top to bottom) - tap one to open its panel, tap it again to close
     Chats         new chat + this session's earlier chats
     Profile       the logged-in crewmember's details, from their account
-    Vitals        sensor readings. None are connected, so it says so.
-    Doctor notes  a doctor's feedback on what VITALS told you, shown once
-                  ground crew has verified it. None yet.
+    Vitals        PLANNED sensor readings. None are connected, so it says so.
+    Doctor notes  PLANNED. Will show a doctor's feedback on what VITALS told
+                  you, once the ground crew and doctor screens exist. For now
+                  the panel says what it will do.
                   (Not a camera. A camera tab may come later.)
-    Supplies      reserved for the medical kit list. Not connected.
+    Supplies      PLANNED. The medical kit list. Says so.
     Lock          at the bottom
 
   RULES THIS PAGE FOLLOWS (from UI_ACCEPTANCE_CRITERIA.md)
@@ -33,10 +34,12 @@
   CHAT HISTORY
     Earlier chats are listed in this page only, for this login. But every
     medical answer is ALSO saved on the Jetson as a case (the reply carries a
-    case_id), so the ground crew sees it even after this screen is locked.
+    case_id), ready for the planned ground crew screen.
 
-  DOCTOR NOTES
-    Fetched from /api/my/notes every 20 s. A dot on the rail icon marks a new one.
+  THIS VERSION
+    The astronaut screen is the one working screen. The ground crew, doctor and
+    Jetson status screens are planned (see planned.html), so the Doctor notes
+    panel shows the plan instead of fetching anything.
 -->
 <html lang="en">
 <head>
@@ -430,21 +433,25 @@
 
       <!-- vitals -->
       <section data-panel="vitals" data-title="Vitals" hidden>
+        <div class="card empty-state">
+          <h3>Planned</h3>
+          <p>Heart rate, blood oxygen, blood pressure and temperature sensors are planned.
+             They are not connected yet, so every slot is empty - VITALS never shows a made-up reading.</p>
+        </div>
         <p class="status" id="sensor-note">Checking sensors…</p>
         <div id="sensor-slots"></div>
       </section>
 
-      <!-- doctor notes: a doctor's feedback on what VITALS said. Not a camera. -->
+      <!-- doctor notes: PLANNED. A doctor's feedback on what VITALS said. Not a camera. -->
       <section data-panel="notes" data-title="Doctor notes" hidden>
-        <div id="notes-list"></div>
-        <div class="card" id="notes-empty">
-          <h3>No doctor notes yet</h3>
-          <p>A doctor reviews what VITALS told you about a case and says whether they
-             agree, disagree, or would do something different. Their feedback shows up
+        <div class="card empty-state">
+          <h3>Planned</h3>
+          <p>A doctor will review what VITALS told you about a case and say whether they
+             agree, disagree, or would do something different. Their feedback will show up
              here after the ground crew checks it.</p>
         </div>
-        <div class="card" id="notes-until">
-          <p>Until then, follow what VITALS told you in the chat, and call the
+        <div class="card">
+          <p>For now, follow what VITALS told you in the chat, and call the
              ground crew if anything gets worse.</p>
         </div>
       </section>
@@ -452,7 +459,7 @@
       <!-- supplies -->
       <section data-panel="supplies" data-title="Medical supplies" hidden>
         <div class="card empty-state">
-          <h3>No supply list connected</h3>
+          <h3>Planned</h3>
           <p>The medical kit list will show here, with what is on board and how much is left.</p>
         </div>
       </section>
@@ -470,8 +477,8 @@
     </header>
 
     <div class="notice" id="emergency-notice" hidden>
-      Emergency access: you are not logged in. The ground crew will see this
-      case as emergency access.
+      Emergency access: you are not logged in. This case is saved as
+      emergency access.
     </div>
 
     <div class="log" id="log" aria-live="polite">
@@ -607,7 +614,6 @@ function openDrawer(name) {
 
   if (section === "vitals") drawVitals();
   if (section === "chats") drawChatList();
-  if (section === "notes") { seenNotes = new Set(notes.map(n => n.case_id + n.released_at)); drawNotes(); }
 }
 
 function closeDrawer() {
@@ -1114,59 +1120,10 @@ async function drawVitals() {
 }
 
 /* ==========================================================================
-   Doctor notes: released by the ground crew, fetched from the Jetson
-   ========================================================================== */
-
-const NOTES_REFRESH_SECONDS = 20;
-let notes = [];
-let seenNotes = null;            // null until the first load, so old notes are not "new"
-
-async function loadNotes() {
-  if (!me || me.emergency === undefined) return;
-  try {
-    const response = await fetch("/api/my/notes");
-    if (response.status === 401) return backToLogin();
-    const data = await response.json();
-    if (!data.ok) return;
-    notes = data.notes || [];
-    if (seenNotes === null) seenNotes = new Set(notes.map(n => n.case_id + n.released_at));
-    const unseen = notes.filter(n => !seenNotes.has(n.case_id + n.released_at));
-    drawNotesBadge(unseen.length);
-    if (section === "notes") drawNotes();
-  } catch (error) { /* the server may be restarting; try again next round */ }
-}
-
-function drawNotesBadge(count) {
-  const button = document.querySelector('.rail [data-section="notes"]');
-  button.querySelector(".dot")?.remove();
-  button.setAttribute("aria-label", count ? `Doctor notes (${count} new)` : "Doctor notes");
-  if (count) button.appendChild(el("span", "dot"));
-}
-
-function drawNotes() {
-  const list = $("notes-list");
-  list.innerHTML = "";
-  $("notes-empty").hidden = notes.length > 0;
-  $("notes-until").hidden = notes.length > 0;
-  notes.forEach(note => {
-    const card = el("div", "card note-card");
-    card.appendChild(el("h3", null, note.title || "Your question"));
-    card.appendChild(el("p", "when",
-      `Asked ${new Date(note.asked_at * 1000).toLocaleString()} - reviewed ${new Date(note.released_at * 1000).toLocaleString()}`));
-    if (note.verdict_words) card.appendChild(el("span", "verdict", `Doctor: ${note.verdict_words}`));
-    card.appendChild(el("p", "message", note.message));
-    card.appendChild(el("p", "when", "Checked by the ground crew before it was sent to you."));
-    list.appendChild(card);
-  });
-  drawNotesBadge(0);
-}
-
-/* ==========================================================================
    Start
    ========================================================================== */
 
-loadSession().then(loadNotes);
-setInterval(loadNotes, NOTES_REFRESH_SECONDS * 1000);
+loadSession();
 show(newChatState());
 restartIdleTimer();
 $("message").focus();

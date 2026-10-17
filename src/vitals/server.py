@@ -19,21 +19,12 @@ WHERE THIS RUNS
 
 ROUTES
     GET  /              PIN login (?station=<role> locks a screen to one role)
-    GET  /astronaut     astronaut screen (AUI)
-    GET  /ground        ground crew screen (GCUI) - every case, full detail
-    GET  /doctor        doctor screen - only the redacted packets
-    GET  /status        the Jetson's screen: model, stations online, case counts
-    GET  /dev           the original developer page: full trace, cross-check
-    GET  /api/status    what /status shows. Open to the network: no names, nothing medical
+    GET  /astronaut     astronaut screen (AUI) - THE working screen in this version
+    GET  /ground        PLANNED: ground crew screen - shows what it will do (planned.html)
+    GET  /doctor        PLANNED: doctor screen - shows what it will do (planned.html)
+    GET  /status        PLANNED: the Jetson's own status screen (planned.html)
     GET  /install/<role>  deploy/install.sh with this server's address filled in, for
                           curl -fsSL http://<jetson>:8000/install/astronaut | sudo bash
-    GET  /api/my/notes                 astronaut: released doctor feedback
-    GET  /api/ground/cases, /case?id=  ground crew: list, full case
-    POST /api/ground/profile {id, profile}        correct the crewmember's details
-    POST /api/ground/send    {id, hidden, note}   redacted packet -> doctor
-    POST /api/ground/release {id, note}           doctor reply -> astronaut
-    GET  /api/doctor/cases, /case?id=  doctor: packets only
-    POST /api/doctor/review  {id, verdict, note}  agree / disagree / own
     GET  /api/health    is the KB loaded, is ollama up, what models exist
     GET  /api/examples  the prompt bank, so the UI can offer real complaints
     GET  /api/me        who is logged in (401 if nobody)
@@ -69,14 +60,14 @@ import socket
 import threading
 import time
 from http.cookies import SimpleCookie
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import urlsplit
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
 from . import sensors
 from .accounts import ROLES, LoginDesk, LoginRefused, load_accounts
-from .cases import DATA_DIR, DEFAULT_HIDDEN, VERDICTS, CaseError, CaseStore
+from .cases import DATA_DIR, CaseError, CaseStore
 from .engine import diagnose
 from .missionlog import MissionLog
 from .extract import KeywordExtractor
@@ -104,10 +95,10 @@ PAGES = {
     "/index.html": "login.html",
     "/login": "login.html",
     "/astronaut": "astronaut.html",
-    "/ground": "ground.html",
-    "/doctor": "doctor.html",
-    "/status": "status.html",
-    "/dev": "dev.html",
+    # Planned screens: one page that says what each will do. See planned.html.
+    "/ground": "planned.html",
+    "/doctor": "planned.html",
+    "/status": "planned.html",
 }
 
 ROLE_WORDS = {"astronaut": "astronaut", "ground": "ground crew", "doctor": "doctor"}
@@ -450,7 +441,6 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = urlsplit(self.path)
-        query = {k: v[0] for k, v in parse_qs(url.query).items()}
 
         if url.path in PAGES:
             self.stations.saw(self.client_address[0], page=url.path)
@@ -463,13 +453,7 @@ class Handler(BaseHTTPRequestHandler):
         routes = {
             "/api/examples": lambda: self._json(200, {"prompts": self._example_prompts()}),
             "/api/health": lambda: self._json(200, self._health()),
-            "/api/status": lambda: self._json(200, self._status()),
             "/api/me": self._me,
-            "/api/my/notes": self._my_notes,
-            "/api/ground/cases": self._ground_cases,
-            "/api/ground/case": lambda: self._ground_case(query.get("id", "")),
-            "/api/doctor/cases": self._doctor_cases,
-            "/api/doctor/case": lambda: self._doctor_case(query.get("id", "")),
         }
         route = routes.get(url.path)
         if route is None:
@@ -482,10 +466,6 @@ class Handler(BaseHTTPRequestHandler):
             "/api/emergency": self._emergency,
             "/api/logout": self._logout,
             "/api/ask": self._ask,
-            "/api/ground/profile": self._ground_profile,
-            "/api/ground/send": self._ground_send,
-            "/api/ground/release": self._ground_release,
-            "/api/doctor/review": self._doctor_review,
         }
         route = routes.get(urlsplit(self.path).path)
         if route is None:
@@ -611,90 +591,6 @@ class Handler(BaseHTTPRequestHandler):
                             f"astronaut turn {len(case['turns'])} saved, status={case['status']}")
         return self._json(200, reply)
 
-    def _my_notes(self):
-        session = self._require("astronaut")
-        if session is None:
-            return None
-        return self._json(200, {"ok": True, "notes": self.cases.notes_for(self._owner(session))})
-
-    # --- route bodies: ground crew ---
-
-    def _ground_cases(self):
-        if self._require("ground") is None:
-            return None
-        return self._json(200, {"ok": True, "cases": self.cases.summaries(),
-                                "counts": self.cases.counts()})
-
-    def _ground_case(self, case_id: str):
-        if self._require("ground") is None:
-            return None
-        try:
-            case = self.cases.get(case_id)
-        except CaseError as exc:
-            return self._json(404, {"ok": False, "error": str(exc)})
-        return self._json(200, {"ok": True, "case": case,
-                                "default_hidden": list(DEFAULT_HIDDEN), "verdicts": VERDICTS})
-
-    def _ground_profile(self, payload: dict):
-        session = self._require("ground")
-        if session is None:
-            return None
-        profile = payload.get("profile")
-        if not isinstance(profile, dict):
-            return self._json(400, {"ok": False, "error": "profile must be a set of fields"})
-        case = self.cases.update_profile(str(payload.get("id", "")), profile, session.name)
-        return self._json(200, {"ok": True, "case": case})
-
-    def _ground_send(self, payload: dict):
-        session = self._require("ground")
-        if session is None:
-            return None
-        hidden = payload.get("hidden")
-        if not isinstance(hidden, list):
-            hidden = list(DEFAULT_HIDDEN)
-        case = self.cases.send_to_doctor(str(payload.get("id", "")), [str(h) for h in hidden],
-                                         str(payload.get("note", "")), session.name)
-        self.log.record("CASES", f"case:{case['id']}", "OK",
-                        f"{session.name} sent redacted packet to doctor, "
-                        f"withheld {len(case['packet']['hidden'])} field(s)")
-        return self._json(200, {"ok": True, "case": case})
-
-    def _ground_release(self, payload: dict):
-        session = self._require("ground")
-        if session is None:
-            return None
-        case = self.cases.release(str(payload.get("id", "")), str(payload.get("note", "")),
-                                  session.name)
-        self.log.record("CASES", f"case:{case['id']}", "OK",
-                        f"{session.name} released doctor reply to astronaut")
-        return self._json(200, {"ok": True, "case": case})
-
-    # --- route bodies: doctor ---
-
-    def _doctor_cases(self):
-        if self._require("doctor") is None:
-            return None
-        return self._json(200, {"ok": True, "cases": self.cases.doctor_queue()})
-
-    def _doctor_case(self, case_id: str):
-        if self._require("doctor") is None:
-            return None
-        try:
-            packet = self.cases.packet(case_id)
-        except CaseError as exc:
-            return self._json(404, {"ok": False, "error": str(exc)})
-        return self._json(200, {"ok": True, "case": packet, "verdicts": VERDICTS})
-
-    def _doctor_review(self, payload: dict):
-        session = self._require("doctor")
-        if session is None:
-            return None
-        packet = self.cases.review(str(payload.get("id", "")), str(payload.get("verdict", "")),
-                                   str(payload.get("note", "")), session.name)
-        self.log.record("CASES", f"case:{packet['id']}", "OK",
-                        f"{session.name} reviewed: {payload.get('verdict')}")
-        return self._json(200, {"ok": True, "case": packet})
-
     # --- route bodies: installer for the Pis ---
 
     def _installer(self, role: str):
@@ -756,20 +652,6 @@ class Handler(BaseHTTPRequestHandler):
             "ollama": ollama,
             "model": self.model,
             "sensors": sensors.status(),
-        }
-
-    def _status(self) -> dict:
-        """For the Jetson's own screen. Open to the network, so nothing medical and no names."""
-        port = self.server.server_address[1]
-        return {
-            **self._health(),
-            "server": socket.gethostname(),
-            "addresses": local_addresses(),
-            "port": port,
-            "uptime_seconds": int(time.time() - STARTED),
-            "cases": self.cases.counts(),
-            "stations": self.stations.snapshot(),
-            "data_saved": self.cases.folder is not None,
         }
 
 

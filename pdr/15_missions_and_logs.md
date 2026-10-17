@@ -35,7 +35,7 @@ what the crewmember said), and every step of the case review loop.
 | B3 | SCOPE | "hi", "thanks", "what's the weather" are not medical; a symptom is |
 | B4 | ENGINE | All 29 saved demo cases give the expected top condition and escalation decision |
 | B5 | EXTRACT | The same 29 cases, from the crewmember's own words → text in, right answer out |
-| B6 | CASES | One case makes the full loop astronaut → ground → doctor → ground → astronaut; the doctor never receives the hidden name or profile field |
+| B6 | CASES | The astronaut's answers are saved as one case on the server, follow-ups join it, nobody else can write to it. The ground crew → doctor → astronaut steps are logged as **planned** (INFO), never as a pass |
 
 ## Advanced missions (started for PDR, required for CDR)
 

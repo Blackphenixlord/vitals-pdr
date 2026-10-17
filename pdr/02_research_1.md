@@ -48,7 +48,7 @@ From *Design and Prototype an AI/ML Medical Diagnosis System* (HUNCH project PDF
 | NLP for keyboard/audio/video input | Keyboard now; voice and camera slots reserved (not faked) |
 | "Can be built initially as an LLM" | Local LLM (Ollama) is the reasoner |
 | Limited computing power, variable internet | Runs on a Jetson Orin Nano, fully offline, model baked into the image |
-| Vigorously tested | 266 automated tests, 60-prompt benchmark, logged missions |
+| Vigorously tested | 262 automated tests, 60-prompt benchmark, logged missions |
 | Disease coverage incl. shingles, kidney stones, appendicitis, head trauma | All four are in the KB |
 
 Sources: [HUNCH project page](https://nasahunch.com/projects/sft-2025-26-27-medical-diagnostic-system-with-machine-learning-artificial-intelligence-from-a-non-medical-persons-perspective--gphimvf8m8y7m9a6s30xuwl8) ·

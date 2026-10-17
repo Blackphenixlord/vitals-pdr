@@ -20,7 +20,7 @@ include students — keep the prototype video the same way to be safe).
 | 2:00–2:20 | Tap **Wrong?** on one understood item; answer updates | "If it misreads you, you fix it, and it re-thinks." |
 | 2:20–2:50 | Type the post-EVA shoulder + rash complaint → EMERGENCY decompression sickness | "This one looks like a strain. It isn't. And if the AI ever misses it, our rules engine escalates anyway." |
 | 2:50–3:10 | Vitals tab: "Not connected" everywhere | "No sensors are plugged in yet, so it shows nothing. A fake heart rate is worse than none." |
-| 3:10–3:45 | Ground crew screen → hide name → send. Doctor screen → Agree. Ground → Release. Back to astronaut **Doctor notes** | "Ground crew decides what the doctor sees. The doctor's reply gets checked before the crew sees it." |
+| 3:10–3:45 | The plan: open `/ground` and `/doctor` (planned pages) and the three-screen diagram | "Next: a ground crew screen that decides what the doctor sees, and a doctor screen. Every answer is already saved as a case, ready for them." |
 | 3:45–4:00 | Jetson + Pis photo/diagram, end card with QR | "All of it runs on one Jetson, three screens, no internet." |
 
 Demo PINs: `accounts.example.json`. Use `docker compose up` or `python -m vitals serve`.
@@ -35,8 +35,8 @@ Slides = the tri-fold sections. ~25 seconds each.
 2. **Research** (0:25) — Spaceflight changes medicine: congestion that isn't a cold, joint pain that's the bends. And there's almost no in-flight data — some conditions have never happened in flight.
 3. **Why not just train an AI?** (0:50) — Nothing to train on. So: a local language model that reads only our cited knowledge base, plus a rules engine as a safety backstop. Decision matrix: 132 vs 127 vs 104 vs 83.
 4. **How it works** (1:15) — Functional diagram, one sentence per box.
-5. **Three screens** (1:40) — Astronaut, ground crew, doctor. Redaction happens on the server.
-6. **Testing** (2:00) — 266 automated tests, logged missions, a benchmark that counts missed escalations first: 18 of 19 on our latest run — and we show the one it missed. Weakest point: saying "nothing fits".
+5. **Three screens** (1:40) — Astronaut works today; ground crew and doctor are planned, with redaction on the server.
+6. **Testing** (2:00) — 262 automated tests, logged missions, a benchmark that counts missed escalations first: 18 of 19 on our latest run — and we show the one it missed. Weakest point: saying "nothing fits".
 7. **Next** (2:30) — Run on the real Jetson, wire the pulse-ox sensor, a medical reviewer for the rules, voice input. End with the QR code.
 
 Each teammate takes at least one section on camera or voice — judges like hearing all three.

@@ -15,9 +15,11 @@ Commander Rivera, flight day 63 on a Mars transit. Medical officer is asleep; gr
 | 4 | Below it: Renal stone (kidney stone) — why: pain in waves, flank pain, blood in urine — with the NASA source link | Answer card |
 | 5 | "What VITALS understood" list. She taps **Wrong?** on one item it misread; the answer updates | Understood list |
 | 6 | One follow-up question at a time (never one she already answered) — she replies | Chat |
-| 7 | Ground crew screen: the case appears under **Needs action**. They hide her name and send the packet | Ground UI |
-| 8 | Doctor screen: sees the redacted packet only. Picks **Agree**, adds a note | Doctor UI |
-| 9 | Ground verifies the reply and releases it. Rivera's **Doctor notes** tab lights up | AUI → Doctor notes |
+| 7 | *(planned)* Ground crew screen: the case appears under **Needs action**. They hide her name and send the packet | Ground UI |
+| 8 | *(planned)* Doctor screen: sees the redacted packet only. Picks **Agree**, adds a note | Doctor UI |
+| 9 | *(planned)* Ground verifies the reply and releases it. Rivera's **Doctor notes** tab lights up | AUI → Doctor notes |
+
+Panels 1–6 run in the prototype today. Panels 7–9 are the plan — draw them as sketches, labelled *planned*.
 
 *Prototype command:* `python -m vitals serve`, then the renal colic complaint from `cases/demo_renal_colic.yaml`.
 

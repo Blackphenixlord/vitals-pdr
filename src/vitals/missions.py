@@ -19,9 +19,10 @@ BASIC MISSIONS (offline, deterministic - they run anywhere, every time)
     B5  EXTRACT   the crewmember's own words for each demo case, run through
                   the offline keyword extractor and then the engine, still
                   reach the expected answer (text in, right answer out)
-    B6  CASES     one case makes the full trip: astronaut -> ground crew ->
-                  doctor -> ground crew -> astronaut, and the doctor never
-                  sees what the ground crew hid
+    B6  CASES     the astronaut's answers are saved as one case on the server,
+                  a follow-up joins the same case, and nobody else can write to
+                  it. The ground crew -> doctor -> astronaut steps are PLANNED
+                  and logged as planned (INFO), never as a pass.
 
 ADVANCED MISSIONS (need ollama and a model - the main LLM path)
     A1  REASON    ollama is reachable and the demo model is present
@@ -165,35 +166,39 @@ def mission_extract(report: MissionReport, knowledge_base, cases_dir: Path) -> N
 
 
 def mission_case_flow(report: MissionReport) -> None:
-    from .cases import CaseStore, RELEASED
+    from .cases import CaseStore, OPEN
 
     store = CaseStore(None)
     answer = {"scope": "medical", "escalate": True,
               "escalation": {"level": "urgent"},
               "differential": [{"id": "renal_stone", "name": "Renal Stone",
                                 "urgency": "urgent", "confidence": "high"}]}
-    case = store.record_turn(None, crew={"name": "Mission Test", "profile": {"Age": "41 years"}},
-                             owner="mission-test", text="side pain in waves",
-                             complaint="side pain in waves", answer=answer)
+    crew = {"name": "Mission Test", "profile": {"Age": "41 years"}}
+    case = store.record_turn(None, crew=crew, owner="mission-test",
+                             text="side pain in waves", complaint="side pain in waves",
+                             answer=answer)
     _check(report, "B6", "CASES", "astronaut:record_turn", bool(case.get("id")),
-           f"case {case.get('id')} opened")
+           f"case {case.get('id')} saved on the server")
 
-    hide = ["name", "profile:Age"]
-    store.send_to_doctor(case["id"], hide, "please review", "Ground Test")
-    packet = str(store.packet(case["id"])["content"])
-    leaked = [value for value in ("Mission Test", "41 years") if value in packet]
-    _check(report, "B6", "CASES", "ground:send_to_doctor", not leaked,
-           f"redacted packet built on the server; withheld {', '.join(hide)}; "
-           f"{'LEAKED ' + ', '.join(leaked) if leaked else 'none of it reached the doctor'}")
+    again = store.record_turn(case["id"], crew=crew, owner="mission-test",
+                              text="no fever", complaint="side pain in waves. no fever",
+                              answer=answer)
+    _check(report, "B6", "CASES", "astronaut:same_chat", again["id"] == case["id"]
+           and len(again["turns"]) == 2, f"follow-up joined the same case ({len(again['turns'])} turns)")
 
-    store.review(case["id"], "agree", "", "Doctor Test")
-    final = store.release(case["id"], "Doctor agrees. Drink water, rest, report changes.",
-                          "Ground Test")
-    _check(report, "B6", "CASES", "ground:release", final["status"] == RELEASED,
-           f"status = {final['status']}")
-    notes = store.notes_for("mission-test")
-    _check(report, "B6", "CASES", "astronaut:notes", len(notes) == 1,
-           f"{len(notes)} released doctor note visible to the crewmember")
+    other = store.record_turn(case["id"], crew={"name": "Someone Else", "profile": {}},
+                              owner="someone-else", text="x", complaint="x", answer=answer)
+    _check(report, "B6", "CASES", "astronaut:owner_check", other["id"] != case["id"],
+           "another crewmember cannot add to this case")
+    _check(report, "B6", "CASES", "case:status", again["status"] == OPEN,
+           f"status = {again['status']} - waiting for the planned ground crew screen")
+
+    # The rest of the loop is planned for a later version. Logged so the plan
+    # is visible in the record, never as a pass.
+    for element, what in (("ground_crew_screen", "review every case, redact, send to a doctor"),
+                          ("doctor_screen", "review the redacted packet: agree / disagree / own read"),
+                          ("doctor_notes", "ground crew releases the doctor's reply to the crewmember")):
+        report.log.record("CASES", element, "INFO", f"[B6] planned: {what}")
 
 
 # --- advanced -------------------------------------------------------------

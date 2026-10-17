@@ -12,10 +12,10 @@ that makes it work. Here: the **astronaut asks → VITALS answers** path, the ce
 | Figma frame | Built as | Route |
 |---|---|---|
 | Login (keypad, dots, emergency button) | `src/vitals/ui/login.html` | `/` |
-| Astronaut chat + rail (Chats · Profile · Vitals · Supplies · Doctor notes) | `src/vitals/ui/astronaut.html` | `/astronaut` |
+| Astronaut chat + rail (Chats · Profile · Vitals · Supplies · Doctor notes — the last three marked planned) | `src/vitals/ui/astronaut.html` | `/astronaut` |
 | Answer card (level first, conditions, what to do, sources, *Wrong?*) | `astronaut.html` render code | `/api/ask` |
-| Ground crew queue (Needs action · With doctor · Released) | `src/vitals/ui/ground.html` | `/ground` |
-| Doctor packet (agree / disagree / own read) | `src/vitals/ui/doctor.html` | `/doctor` |
+| Ground crew queue (Needs action · With doctor · Released) | planned — `planned.html` says what it will do | `/ground` |
+| Doctor packet (agree / disagree / own read) | planned — `planned.html` says what it will do | `/doctor` |
 
 ## Code for each box on the diagram
 

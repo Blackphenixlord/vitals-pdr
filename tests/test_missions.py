@@ -53,3 +53,10 @@ def test_the_log_never_contains_what_the_crewmember_said():
     report = run_missions()
     text = " ".join(e.detail for e in report.log.entries)
     assert "side pain in waves" not in text
+
+
+def test_planned_screens_are_logged_as_planned_never_as_passed():
+    report = run_missions()
+    planned = [e for e in report.log.entries if "] planned:" in e.detail]
+    assert {e.element for e in planned} >= {"ground_crew_screen", "doctor_screen"}
+    assert all(e.status == "INFO" for e in planned)

@@ -31,7 +31,8 @@ Mentor Michael Hayes' requirements document has not arrived yet — this table w
 | F9 | reply plainly to non-medical messages without calling the model | T | B3 mission | ✅ |
 | F10 | require a PIN login; enforce roles on the **server** | NB | `test_accounts.py`, `test_server.py` | ✅ |
 | F11 | offer an emergency button that skips the PIN | T | `test_server.py` | ✅ |
-| F12 | save every medical answer as a case; ground crew can send a redacted packet to a doctor; doctor replies; ground releases it to the astronaut | T | B6 mission, `test_cases.py` | ✅ |
+| F12 | save every medical answer as a case | T | B6 mission, `test_cases.py` | ✅ |
+| F12b | ground crew screen: review cases, redact, send to a doctor; doctor screen: agree / disagree / own read; ground releases the reply to the astronaut | T | — | 🔵 planned — `/ground`, `/doctor` show the plan |
 | F13 | reserve slots for sensors (HR, SpO₂, BP, temp) and **never invent a reading** | T | B2 mission, `test_sensors.py` | ✅ slots, 🔴 hardware |
 | F14 | log every event with subsystem, element, status and timestamp | HUNCH list | `test_missionlog.py` | ✅ |
 | F15 | voice input | NB | — | 🔴 not started |

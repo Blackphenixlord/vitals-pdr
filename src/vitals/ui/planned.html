@@ -1,0 +1,134 @@
+<!doctype html>
+<!--
+  VITALS - the screens that are PLANNED, not built in this version.
+
+  This version ships ONE working screen: the astronaut screen (AUI). The ground
+  crew screen, the doctor screen and the Jetson status screen are part of the
+  plan, so their routes show what each will do instead of a half-working page.
+  No made-up cases, names or numbers appear here.
+
+  Served for /ground, /doctor and /status. The page picks its text from the URL.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VITALS - planned screen</title>
+<style>
+  :root {
+    --bg: #14172e; --surface: #1c2042; --raised: #272c57; --line: #3a4078;
+    --ink: #eef0fb; --muted: #aab0dc; --signal: #8cc8ff; --planned: #fdd663; --planned-ink: #14100a;
+    --display: Bahnschrift, "DIN Alternate", "Barlow", "Roboto Condensed", system-ui, sans-serif;
+    --body: "Segoe UI", system-ui, Roboto, "Helvetica Neue", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 var(--body); }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 64px; }
+  .badge { display: inline-block; background: var(--planned); color: var(--planned-ink);
+           font: 700 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase;
+           padding: 8px 12px; border-radius: 8px; }
+  h1 { font: 700 40px/1.1 var(--display); margin: 16px 0 6px; }
+  .lede { color: var(--muted); font-size: 19px; margin: 0 0 28px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .card h2 { font: 600 18px/1.2 var(--display); margin: 0 0 10px; }
+  ul, ol { margin: 0; padding-left: 22px; }
+  li { margin: 6px 0; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .step { background: var(--raised); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 15px; }
+  .step.here { border-color: var(--planned); }
+  .arrow { color: var(--muted); }
+  a.button { display: inline-block; min-height: 48px; padding: 12px 18px; border-radius: 12px;
+             background: var(--raised); color: var(--ink); text-decoration: none; border: 1px solid var(--line); }
+  a.button:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+  footer { margin-top: 28px; color: var(--muted); font-size: 15px; }
+</style>
+</head>
+<body>
+<main>
+  <span class="badge">Planned - not in this version</span>
+  <h1 id="title">Planned screen</h1>
+  <p class="lede" id="lede"></p>
+
+  <div class="card">
+    <h2>What it will do</h2>
+    <ul id="will"></ul>
+  </div>
+
+  <div class="card">
+    <h2>Where it fits</h2>
+    <div class="flow" id="flow"></div>
+  </div>
+
+  <div class="card">
+    <h2>What works today</h2>
+    <p id="today">The astronaut screen. Every medical answer it gives is already saved on the
+       server as a case, so this screen will have real cases to show when it is built.</p>
+  </div>
+
+  <a class="button" href="/">Back to login</a>
+
+  <footer>VITALS - diagnosis and decision support · a doctor has the final say.</footer>
+</main>
+
+<script>
+const SCREENS = {
+  "/ground": {
+    title: "Ground crew screen",
+    lede: "For the team on Earth who watch over every case and decide what the doctor gets to see.",
+    will: [
+      "List every case from the astronaut screen, newest and most urgent first",
+      "Show everything VITALS said - the full answer, what it understood, and its sources",
+      "Correct the crewmember's profile (height, allergies, medications)",
+      "Choose what to hide before a case goes to a doctor (name, profile details, transcript)",
+      "Check the doctor's reply before the crewmember sees it, then release it",
+      "Flag a case when the crewmember adds something new after it was sent"
+    ],
+    here: 1
+  },
+  "/doctor": {
+    title: "Doctor screen",
+    lede: "For a doctor reviewing a case when the link to the crew allows it.",
+    will: [
+      "Show only the redacted packet the ground crew chose to send - never the full case",
+      "Show what VITALS told the crewmember and why",
+      "Let the doctor agree, disagree, or give their own read - with a reason when they disagree",
+      "Send the reply back to the ground crew to check before it reaches the crew"
+    ],
+    here: 2
+  },
+  "/status": {
+    title: "Jetson status screen",
+    lede: "The Jetson's own display: is the system healthy?",
+    will: [
+      "Show the model that is loaded and whether it is answering",
+      "Show which screens (Raspberry Pis) are connected",
+      "Count cases by where they are in the review loop",
+      "No names and nothing medical on this screen - it is visible to anyone in the room"
+    ],
+    here: -1
+  }
+};
+const STEPS = ["Astronaut asks VITALS", "Ground crew reviews", "Doctor replies",
+               "Ground crew checks it", "Crewmember sees the doctor's note"];
+
+const screen = SCREENS[location.pathname] || {
+  title: "Planned screen", lede: "This part of VITALS is planned for a later version.", will: [], here: -1
+};
+document.title = "VITALS - " + screen.title + " (planned)";
+document.getElementById("title").textContent = screen.title;
+document.getElementById("lede").textContent = screen.lede;
+const will = document.getElementById("will");
+screen.will.forEach(text => { const li = document.createElement("li"); li.textContent = text; will.appendChild(li); });
+const flow = document.getElementById("flow");
+STEPS.forEach((text, i) => {
+  if (i) { const a = document.createElement("span"); a.className = "arrow"; a.textContent = "→"; flow.appendChild(a); }
+  const s = document.createElement("span");
+  // The ground crew owns two steps of the loop (review, then check the reply).
+  const mine = i === screen.here || (screen.here === 1 && i === 3);
+  s.className = "step" + (mine ? " here" : "");
+  s.textContent = i === 0 ? text + " (works today)" : text;
+  flow.appendChild(s);
+});
+</script>
+</body>
+</html>

@@ -11,15 +11,34 @@
 
 ---
 
-## PDR (60% review) package
+## This version
 
-Everything on the HUNCH 2026-27 PDR requirement list is in [`pdr/`](pdr/) — start at
-[`pdr/README.md`](pdr/README.md), which maps every board item to its file.
+**Working:** the astronaut screen — PIN login, emergency access, chat, the answer card
+(urgency first, ranked conditions, why, what to do, sources), *Wrong?* corrections, profile —
+on top of the full reasoning pipeline, knowledge base and safety backstop.
+
+**Planned (shown in the app as planned, not built yet):**
+
+| Planned | What it will do | Where it shows today |
+|---|---|---|
+| Ground crew screen | Review every case, correct profiles, redact, send to a doctor, release the reply | `/ground` — planned page |
+| Doctor screen | Review the redacted case: agree / disagree / own read | `/doctor` — planned page |
+| Doctor notes | The doctor's checked reply, back on the astronaut screen | astronaut screen → Doctor notes tab |
+| Sensors | Heart rate, SpO₂, blood pressure, temperature | astronaut screen → Vitals tab (empty slots, never fake numbers) |
+| Medical supplies | The kit list and what's left | astronaut screen → Supplies tab |
+| Jetson status screen | Model, connected screens, case counts | `/status` — planned page |
+| Jetson + three Raspberry Pi screens | One server, one screen per role | `deploy/` |
+| Voice input | Talk instead of type | — |
+
+Every medical answer is already saved as a case on the server, ready for the ground crew screen.
 
 ```bash
-python -m vitals missions     # the PDR basic missions, logged (subsystem, element, status, timestamp)
-python -m vitals log          # print the newest mission log
+python -m vitals missions     # logged checks: subsystem, element, status, timestamp
+python -m vitals log          # print the newest log
 ```
+
+The design-review documents (problem, research, requirements, diagrams, decision matrix,
+schedule, test plan, storyboards, video scripts) are in [`pdr/`](pdr/).
 
 ---
 
@@ -73,7 +92,7 @@ python -m vitals bench --category mimic
 # supporting commands
 python -m vitals validate                 # check the knowledge base
 python -m vitals explain sans             # show a condition and its sources
-pytest tests -q                        # 266 tests
+pytest tests -q                        # 262 tests
 python -m vitals missions              # PDR basic missions, logged
 ```
 
@@ -246,19 +265,22 @@ CSS and JS, and a test fails the build if a CDN link ever creeps in.
 pipeline `vitals ask` uses, so the UI can never drift from the CLI. If they ever
 disagree, that is a bug in `server.py`.
 
-What it shows:
+The astronaut screen (`/astronaut`, after the PIN login at `/`) shows:
 
-- the escalation banner first, before anything else
-- the full differential, including what was considered and **ruled down**
-- supporting vs contradicting evidence per condition
-- next questions as clickable chips that append to the complaint
-- a "what the system saw" panel: extracted findings, what was retrieved and why,
-  and the deterministic engine's independent cross-check
-- a standing warning that no vital sign has been measured
+- the escalation level first, as a word and a color, before anything else
+- the ranked conditions with the reasons for and against, what to do, and the
+  source for each
+- "What VITALS understood", with a **Wrong?** button on every item
+- one follow-up question at a time, never one already answered
+- empty sensor slots that say "No sensor connected" - never a made-up reading
 
-Two bits of framing are load-bearing and have their own tests: **"decision
-support - not a diagnosis"** in the header, and **"no instruments attached"**
-above the input. Restyle freely; do not delete those.
+`/ground`, `/doctor` and `/status` show what those planned screens will do.
+`python -m vitals ask "..." --verbose --crosscheck` shows the full trace (what was
+extracted, retrieved, and what the backup engine thought).
+
+Two bits of framing are load-bearing and have their own tests: **"a doctor has
+the final say"** on every screen, and **"No sensor connected"** on the vitals
+slots. Restyle freely; do not delete those.
 
 > Note for Cruz: this is a working shell to react to, not the final design.
 > The board item says paper sketches first, and that is still the right order -
@@ -324,13 +346,15 @@ src/vitals/
   bench.py            runs the prompt bank, scores hits vs refusals
   missions.py         the PDR basic/advanced missions
   missionlog.py       the log: timestamp, subsystem, element, status
-  ui/index.html       the whole interface, one self-contained file
+  ui/login.html       PIN login
+  ui/astronaut.html   the astronaut screen - the working screen in this version
+  ui/planned.html     /ground, /doctor, /status: what those planned screens will do
 Dockerfile / docker-compose.yml    one-command run
 docker/ollama.Dockerfile           bakes the language model into its image
 prompts/complaints.yaml   33 test complaints, one per condition plus mimics
 cases/         saved demo cases with expected answers — these are regression tests
-tests/         266 tests
-pdr/           the PDR board package - see pdr/README.md
+tests/         262 tests
+pdr/           design-review documents - see pdr/README.md
 docs/          knowledge base format, research notes
 ```
 
@@ -347,9 +371,9 @@ docs/          knowledge base format, research notes
 
 ## Status
 
-35 conditions · 145 findings · 266 tests passing · 29 demo cases passing · 6/6 basic missions.
-Runs as one server on the Jetson for three Raspberry Pi screens (astronaut,
-ground crew, doctor) - one installer for all of them, see `deploy/README.md`.
+35 conditions · 145 findings · 262 tests passing · 29 demo cases passing · 6/6 basic missions.
+One working screen (astronaut). Planned: ground crew, doctor and status screens, one
+server on the Jetson for three Raspberry Pi screens - the installer is in `deploy/`.
 Ollama is the reasoner; the KB grounds it; sensors are stubbed, not faked.
 Messages that are not medical ("hi", "what's the weather") get a plain reply
 from `src/vitals/scope.py` and never reach the model.

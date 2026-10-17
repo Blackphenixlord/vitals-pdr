@@ -10,17 +10,16 @@ test or a logged mission you can run.
 | Understanding the crewmember | 10% | 70% | Offline phrasebook, negation, crew corrections | Missed phrasings from user testing; voice | missions B3, B5 |
 | Reasoning (local LLM, grounded) | 20% | 75% | Answers from KB pages only; can't invent conditions or citations; temperature 0 | Refusals ("nothing fits"); re-bench at 60 prompts | `test_reason.py`, `vitals bench` |
 | Safety / escalation | 10% | 80% | Model + rules backstop; 18/19 must-escalate prompts escalated (17 Oct) | Pain-only bends after EVA — missed by model and backstop | mission A2, bench |
-| Astronaut screen | 10% | 80% | PIN login, emergency button, chat, answer card, *Wrong?*, profile, vitals slots, doctor notes | User testing round 1; accessibility checks | `test_server.py` |
-| Ground crew + doctor screens | 10% | 70% | Case queue, profile edits, redaction on the server, doctor verdicts, release | Run on real Pis; polish | mission B6, `test_cases.py` |
+| Astronaut screen | 10% | 80% | PIN login, emergency button, chat, answer card, *Wrong?*, profile; Vitals / Doctor notes / Supplies tabs say *planned* | User testing round 1; accessibility checks | `test_server.py` |
+| Ground crew + doctor screens | 10% | 10% | Every answer saved as a case on the server; `/ground` and `/doctor` show the plan | **Planned** — both screens, redaction, doctor review, release | mission B6, `test_cases.py` |
 | Deployment (Jetson + 3 Pis) | 10% | 40% | Docker with the model baked in (verified offline); one installer for all boards | **Never run on the real Jetson** | `deploy/` |
 | Sensors | 10% | 15% | Slots + contract; never invents a reading | Parts order; MAX30102 first | mission B2 |
 | Logging / missions | 5% | 90% | Every event logged with subsystem, element, status, timestamp | Statistics from logs for CDR | `vitals missions`, `vitals log` |
-| **Weighted total** | 100% | **~68%** | | | |
+| **Weighted total** | 100% | **~62%** | | | |
 
-How it's worked out: 15·0.85 + 10·0.70 + 20·0.75 + 10·0.80 + 10·0.80 + 10·0.70 + 10·0.40 + 10·0.15 + 5·0.90
-= 12.75 + 7 + 15 + 8 + 8 + 7 + 4 + 1.5 + 4.5 = **67.75 ≈ 68%** — past the 60% bar, short of the
-recommended 90%. The two parts holding it back are hardware (Jetson run, sensors) — both
-waiting on the board being flashed and the parts order.
+How it's worked out: 15·0.85 + 10·0.70 + 20·0.75 + 10·0.80 + 10·0.80 + 10·0.10 + 10·0.40 + 10·0.15 + 5·0.90
+= 12.75 + 7 + 15 + 8 + 8 + 1 + 4 + 1.5 + 4.5 = **61.75 ≈ 62%** — at the 60% bar. What's left is
+mostly planned on purpose: the ground crew and doctor screens, the Jetson run, and the sensors.
 
 ## Demo setup for PDR (offline)
 
