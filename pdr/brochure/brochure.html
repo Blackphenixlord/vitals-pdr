@@ -2,166 +2,187 @@
 <html><head><meta charset="utf-8"><title>VITALS brochure</title>
 <style>
 @font-face{font-family:Tektur;src:url(fonts/Tektur.ttf);font-weight:400 900;font-stretch:75% 100%}
-@font-face{font-family:Plex;src:url(fonts/IBMPlexSans.ttf);font-weight:100 700}
+@font-face{font-family:Plex;src:url(fonts/IBMPlexSans.ttf);font-weight:100 700;font-stretch:85% 100%}
 @page{size:11in 8.5in;margin:0}
-:root{--bg:#0A0E1A;--deep:#050B18;--card:#161A25;--line:#474A53;--muted:#A9ABAF;--red:#E73337;--navy:#1E2A47;--white:#fff}
+:root{--space:#0A0E1A;--navy:#1E2A47;--blue:#0052A5;--sky:#7FA3DD;--red:#E73337;--moon:#A9ABAF}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--white);font-family:Plex,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.sheet{width:11in;height:8.5in;display:grid;grid-template-columns:repeat(3,1fr);page-break-after:always;overflow:hidden;position:relative;
- background:radial-gradient(1px 1px at 12% 18%,#fff8 50%,transparent),radial-gradient(1px 1px at 37% 72%,#fff6 50%,transparent),radial-gradient(1px 1px at 58% 9%,#fff7 50%,transparent),radial-gradient(1px 1px at 81% 44%,#fff5 50%,transparent),radial-gradient(1.5px 1.5px at 92% 85%,#fff6 50%,transparent),radial-gradient(1px 1px at 24% 91%,#fff5 50%,transparent),radial-gradient(1px 1px at 69% 63%,#fff4 50%,transparent),var(--bg)}
+html,body{background:var(--space);color:#fff;font-family:Plex,sans-serif;font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet{width:11in;height:8.5in;display:grid;grid-template-columns:repeat(3,1fr);page-break-after:always;overflow:hidden;background:var(--space)}
 .sheet:last-child{page-break-after:auto}
-.panel{padding:.42in .38in;position:relative;display:flex;flex-direction:column}
-.panel+.panel{border-left:1px dashed #ffffff14}
-h1,h2,h3,.disp{font-family:Tektur,sans-serif;font-weight:800;letter-spacing:.01em;line-height:1.05}
-h2{font-size:21pt;margin-bottom:.14in}
-h3{font-size:11pt;margin-bottom:3px}
-p,li{font-size:8.6pt;line-height:1.45;color:#D9DADD}
-.muted{color:var(--muted)}
-.tick{width:26px;height:2px;background:var(--red);margin-bottom:7px}
-.eyebrow{font-family:Tektur;font-size:7.5pt;letter-spacing:.18em;color:var(--red);text-transform:uppercase;font-weight:700;margin-bottom:6px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.card.hot{border-color:var(--red)}
+.panel{padding:.42in .36in .38in;display:flex;flex-direction:column;overflow:hidden}
+.q{font-family:Tektur;font-weight:500;font-size:9.5pt;color:var(--sky);margin-bottom:3px;font-stretch:90%}
+h2{font-family:Tektur;font-weight:800;font-size:19pt;line-height:1.02;margin-bottom:.1in}
+p{font-size:9.6pt;line-height:1.48;color:#D8DAE0}
+p b{color:#fff;font-weight:600}
+.note{font-size:7.4pt;color:var(--moon);line-height:1.4}
+.lede{font-family:Tektur;font-weight:800;font-size:21pt;line-height:1;font-stretch:88%;margin:.02in 0 .16in}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:.12in 0 .2in}
+.three div{border-top:3px solid var(--sky);padding-top:4px;font-family:Tektur;font-weight:700;font-size:8.6pt;line-height:1.12}
+table{border-collapse:collapse;width:100%}
+td{font-size:9pt;line-height:1.3;padding:3.5px 6px 3.5px 0;border-bottom:1px solid #ffffff1c;vertical-align:top;color:#D8DAE0}
+td b{color:#fff;font-weight:600}
+.list{display:grid;gap:.17in;margin-top:.06in}
+.list h3{font-family:Tektur;font-weight:700;font-size:12pt;margin-bottom:1px}
+.list p{font-size:9.4pt;line-height:1.38}
 /* cover */
-.cover{padding:0;justify-content:space-between;background:linear-gradient(180deg,transparent 0,transparent 52%,#0A0E1A00 52%),var(--bg)}
-.cover .top{padding:.5in .4in 0;text-align:center}
-.cover .emb{width:1.75in;height:1.75in;margin:.15in auto .2in;display:block;filter:drop-shadow(0 0 24px #1E2A47)}
-.cover h1{font-size:46pt;letter-spacing:.04em}
-.cover .tag{font-size:10.5pt;color:#E4E5E8;margin:.12in auto 0;max-width:2.9in;line-height:1.45}
-.earth{height:2.35in;position:relative;overflow:hidden}
-.earth:before{content:"";position:absolute;left:-40%;right:-40%;top:.55in;height:5in;border-radius:50%;
- background:radial-gradient(ellipse at 50% 0%,#5d8fd0 0%,#2b4f86 18%,#14284a 38%,#0a1426 60%);box-shadow:0 -6px 30px #6aa3ff66,0 -1px 0 #9cc4ff}
-.earth .team{position:absolute;bottom:.32in;left:0;right:0;text-align:center}
-.earth .team .disp{font-size:13pt}
-.btn{display:inline-block;background:var(--red);color:#fff;font-family:Tektur;font-weight:700;font-size:8pt;padding:5px 14px;border-radius:999px;letter-spacing:.04em}
-/* steps */
-.steps{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.step{padding:8px 10px}
-.step .n{font-family:Tektur;font-weight:800;color:var(--red);font-size:13pt;line-height:1}
-.step h3{margin:3px 0 1px;font-size:10pt}
-.step p{font-size:7.6pt;line-height:1.35}
-.step.wide{grid-column:span 2;display:flex;gap:12px;align-items:center}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto}
-.stat{text-align:center;padding:9px 6px}
-.stat .disp{font-size:22pt;color:#fff}
-.stat .disp.r{color:var(--red)}
-.stat p{font-size:7.2pt;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
-.shot{width:100%;border-radius:10px;border:1px solid var(--line);display:block}
-.cap{font-size:7.3pt;color:var(--muted);margin:5px 0 12px}
-.feat{display:grid;gap:11px}
-.feat .f{padding-left:0}
-.spec{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.spec>div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 9px}
-.spec .k{font-family:Tektur;font-size:6.6pt;letter-spacing:.16em;color:var(--red);font-weight:700}
-.spec .v{font-family:Tektur;font-size:9pt;font-weight:700;margin-top:2px}
-.qr{background:#fff;border-radius:12px;padding:8px;width:1.35in;height:1.35in}
+.cover{background:var(--blue);padding:.5in .36in .4in;justify-content:space-between}
+.cover img{width:1.9in;height:1.9in;display:block}
+.word{font-family:Tektur;font-weight:900;font-size:62pt;line-height:.82;margin-top:.24in}
+.cover .tag{font-size:11pt;line-height:1.4;color:#E6EEFA;margin-top:.18in;max-width:2.8in}
+.cover .foot{font-family:Tektur;font-weight:600;font-size:12pt}
+.cover .foot span{display:block;font-family:Plex;font-weight:400;font-size:8.2pt;color:#D3E0F5;margin-top:3px}
+/* back */
+.qr{background:#fff;padding:7px;width:1.3in;height:1.3in;flex:none}
 .qr img{width:100%;height:100%;display:block}
 .people p{margin-bottom:5px}
-.people b{font-family:Tektur;font-weight:700;color:#fff;font-size:9.5pt}
-.fine{font-size:6.9pt;color:var(--muted);line-height:1.4}
-.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:7pt;color:var(--muted);margin:0 3px 4px 0}
-.pill.on{border-color:var(--red);color:#fff}
-.quote{border-left:3px solid var(--red);padding:2px 0 2px 10px;margin:.12in 0}
-.quote p{font-family:Tektur;font-size:11pt;color:#fff;line-height:1.3;font-weight:600}
+.people b{font-family:Tektur;font-weight:700;font-size:10pt}
+/* inside */
+.flow svg{display:block;width:100%;height:auto}
+.big{display:flex;justify-content:space-between;gap:.12in;margin:.16in 0 .2in}
+.big div{white-space:nowrap;font-family:Tektur;font-weight:800;font-size:19pt;line-height:1}
+.big small{display:block;font-family:Plex;font-weight:400;font-size:7pt;color:var(--moon);margin-top:3px;line-height:1.25}
+.big .r{color:var(--red)}
+img.shot{width:100%;display:block}
+.cap{font-size:7.6pt;color:var(--moon);margin:.06in 0 .14in;line-height:1.4}
+.status td:last-child{text-align:right;white-space:nowrap}
+.ok{color:#5FD08F!important}.plan{color:var(--moon)!important}
 </style></head>
 <body>
 
 <!-- OUTSIDE: inside flap | back | cover -->
 <section class="sheet">
   <div class="panel">
-    <div class="eyebrow">The problem</div>
-    <h2>Earth is 40 minutes away</h2>
-    <p>Earth-based symptom checkers assume Earth. In deep space, a stuffy nose on day 2 is fluid shift, not a cold — and joint pain after a spacewalk is decompression sickness until proven otherwise.</p>
-    <div class="quote"><p>When the doctor is 20 minutes away, the crew still needs an answer now.</p></div>
-    <p>With communication blackouts of up to two weeks, a crew with no physician aboard has to decide what to do. VITALS answers three questions:</p>
-    <div class="feat" style="margin-top:.14in">
-      <div class="card"><h3>What could this be?</h3><p>Conditions from a research-grounded knowledge base — no internet.</p></div>
-      <div class="card"><h3>How serious is it?</h3><p>Urgency first, so the crew knows if a ground call is needed.</p></div>
-      <div class="card"><h3>What do we do now?</h3><p>Immediate steps and a safety backstop for non-medical crewmembers.</p></div>
-    </div>
+    <div class="q">The problem</div>
+    <div class="lede">When the doctor is 20 minutes away, the crew still needs an answer now.</div>
+    <svg viewBox="0 0 900 150" width="100%" style="margin-bottom:.12in">
+      <circle cx="60" cy="70" r="46" fill="#0052A5" stroke="#7FA3DD" stroke-width="3"/>
+      <circle cx="842" cy="70" r="30" fill="#B5462E"/>
+      <line x1="118" y1="70" x2="800" y2="70" stroke="#7FA3DD" stroke-width="4" stroke-dasharray="14 12"/>
+      <text x="459" y="50" fill="#fff" font-family="Tektur" font-weight="800" font-size="46" text-anchor="middle">4 to 40 minutes</text>
+      <text x="459" y="116" fill="#A9ABAF" font-family="Plex" font-size="30" text-anchor="middle">each way, from Earth to Mars</text>
+      <text x="60" y="146" fill="#A9ABAF" font-family="Plex" font-size="24" text-anchor="middle">Earth</text>
+      <text x="842" y="146" fill="#A9ABAF" font-family="Plex" font-size="24" text-anchor="middle">Mars</text>
+    </svg>
+    <p>Symptom checkers on Earth assume Earth. In space a stuffy nose on day 2 is fluid shift, not a cold, and joint pain after a spacewalk is decompression sickness until proven otherwise.</p>
+    <p style="margin-top:.08in">With blackouts of up to two weeks and <b>no physician on board</b>, a non-medical crewmember has to answer three questions alone.</p>
+    <div class="three" style="margin-bottom:.16in"><div>What could this be?</div><div>How serious is it?</div><div>What do we do now?</div></div>
+    <table style="margin-bottom:.1in">
+      <tr><td><b>Fluid shift</b></td><td>Stuffy nose on day 1 is not a cold</td></tr>
+      <tr><td><b>Spacewalk</b></td><td>Joint pain after one outranks a strain</td></tr>
+      <tr><td><b>Kidney stone</b></td><td>Bone loss raises the risk in flight</td></tr>
+    </table>
+    <p class="note" style="margin-top:auto">NASA’s own risk models call in-flight medical data severely limited. For some serious conditions the count is zero, so there is nothing to train a model on.</p>
   </div>
 
   <div class="panel">
-    <div class="eyebrow">Team TETHER</div>
+    <div class="q">Team TETHER</div>
     <h2>Who built it</h2>
     <div class="people">
-      <p><b>Joshua Collado</b><br><span class="muted">Project lead &amp; main coder</span></p>
-      <p><b>Joaquin</b><br><span class="muted">Medical research &amp; co-coder</span></p>
-      <p><b>Cruz</b><br><span class="muted">Interface design &amp; user testing</span></p>
-      <p><b>Ms. Sylvia Odoms</b><br><span class="muted">Science Academy teacher</span></p>
+      <p><b>Joshua Collado</b><br>Project lead and main coder</p>
+      <p><b>Joaquin</b><br>Medical research and co-coder</p>
+      <p><b>Cruz</b><br>Interface design and user testing</p>
+      <p><b>Ms. Sylvia Odoms</b><br>Science Academy teacher</p>
     </div>
-    <div class="tick" style="margin-top:.12in"></div>
-    <p class="muted" style="font-size:7.8pt">South Texas ISD Science Academy · Mercedes, Texas<br>NASA HUNCH 2026–27 — Software &amp; Technology<br>SFT: Medical Diagnostic System with Machine Learning &amp; Artificial Intelligence</p>
-    <div class="card" style="margin-top:.2in"><div class="eyebrow" style="margin-bottom:4px">Next, for CDR</div><p>Ground crew &amp; doctor screens · Jetson Orin Nano server · first sensor (pulse-ox) · user testing with 5+ people</p></div>
-    <div style="margin-top:auto;display:flex;gap:12px;align-items:center">
+    <p class="note" style="margin-top:.1in">South Texas ISD Science Academy, Mercedes, Texas. NASA HUNCH 2026–27, Software and Technology: Medical Diagnostic System with Machine Learning and Artificial Intelligence.</p>
+    <div style="margin-top:.22in"><div class="q">What’s next</div>
+    <table>
+      <tr><td><b>November</b></td><td>Run it on the Jetson</td></tr>
+      <tr><td><b>Winter</b></td><td>Ground crew and doctor screens, first sensor</td></tr>
+      <tr><td><b>March</b></td><td>CDR at 90%, with voice</td></tr>
+      <tr><td><b>May</b></td><td>FDR at Johnson Space Center</td></tr>
+    </table></div>
+    <div style="margin-top:auto;display:flex;gap:.16in;align-items:flex-end">
       <div class="qr"><img src="img/qr.png" alt="QR code to the VITALS website"></div>
-      <div><div class="disp" style="font-size:11pt">Scan for the site</div><p class="muted" style="font-size:7.6pt;margin-top:3px">joshuacollado636<br>.wixsite.com/vitals</p></div>
+      <div><div style="font-family:Tektur;font-weight:700;font-size:12pt;line-height:1.1">Visit the website</div><p class="note" style="margin-top:4px">joshuacollado636<br>.wixsite.com/vitals</p></div>
     </div>
-    <p class="fine" style="margin-top:.16in">VITALS is a student prototype for diagnosis and decision support — a doctor has the final say. Not a medical device.</p>
+    <p class="note" style="margin-top:.18in">VITALS is a student prototype for decision support. A doctor has the final say. Not a medical device.</p>
   </div>
 
   <div class="panel cover">
-    <div class="top">
-      <img class="emb" src="img/emblem.png" alt="VITALS emblem">
-      <h1>VITALS</h1>
-      <p class="tag">An onboard medical assistant for astronauts on long-duration Moon and Mars missions.</p>
+    <div>
+      <img src="img/emblem.png" alt="VITALS emblem">
+      <div class="word">VITALS</div>
+      <p class="tag">An onboard medical assistant for astronauts on long missions to the Moon and Mars. It works with no internet at all.</p>
     </div>
-    <div class="earth">
-      <div class="team"><div class="disp">TEAM TETHER</div><p class="muted" style="font-size:7.8pt;margin-top:3px">NASA HUNCH 2026–27</p></div>
-    </div>
+    <div class="foot">Team TETHER<span>NASA HUNCH 2026–27</span></div>
   </div>
 </section>
 
-<!-- INSIDE: three panels -->
+<!-- INSIDE -->
 <section class="sheet">
   <div class="panel">
-    <div class="eyebrow">The VITALS core</div>
-    <h2>Built to be trusted</h2>
-    <div class="feat">
-      <div><div class="tick"></div><h3>Talk in plain words</h3><p>Describe symptoms the way you'd say them out loud.</p></div>
-      <div><div class="tick"></div><h3>Urgency first</h3><p>Every answer leads with how serious it is. Critical conditions are flagged at once.</p></div>
-      <div><div class="tick"></div><h3>Source-backed answers</h3><p>Grounded in NASA research. It never invents a condition — it only names what it knows.</p></div>
-      <div><div class="tick"></div><h3>Safety backstop</h3><p>A rules engine can always raise the alarm, even if the AI doesn't.</p></div>
-      <div><div class="tick"></div><h3>Fix what it misread</h3><p>The <i>Wrong?</i> button lets the crew correct it. Every case is logged.</p></div>
-      <div><div class="tick"></div><h3>Fully offline</h3><p>A local AI model and a cited knowledge base. No internet needed.</p></div>
-    </div>
-    <div class="quote" style="margin-top:auto"><p>A doctor has the final say. VITALS helps the crew get there.</p></div>
-  </div>
-
-  <div class="panel">
-    <div class="eyebrow">How it works</div>
-    <h2>How VITALS Works</h2>
-    <div class="steps">
-      <div class="card step"><div class="n">01</div><h3>Ask</h3><p>Describe symptoms in plain English.</p></div>
-      <div class="card step"><div class="n">02</div><h3>Scope</h3><p>Medical question, or a plain reply?</p></div>
-      <div class="card step"><div class="n">03</div><h3>Read</h3><p>Pull out the symptoms named.</p></div>
-      <div class="card step"><div class="n">04</div><h3>Retrieve</h3><p>Search 35 cited spaceflight conditions.</p></div>
-      <div class="card step hot"><div class="n">05</div><h3>Reason</h3><p>Local AI reads only the cited pages.</p></div>
-      <div class="card step hot"><div class="n">06</div><h3>Check</h3><p>Rules engine blocks anything invented.</p></div>
-      <div class="card step wide"><div class="n" style="font-size:17pt">07</div><div><h3>Answer</h3><p>Urgency, what it could be, and what to do now.</p></div></div>
-    </div>
-    <p class="muted" style="font-size:7.8pt;margin-top:.12in;text-align:center">No in-flight data to train on — so VITALS grounds a local AI in cited NASA research instead.</p>
-    <div class="stats" style="margin-top:.16in">
-      <div class="card stat"><div class="disp">35</div><p>Spaceflight conditions</p></div>
-      <div class="card stat"><div class="disp">262</div><p>Automated tests passed</p></div>
-      <div class="card stat"><div class="disp r">18/19</div><p>Must-escalate caught</p></div>
-      <div class="card stat"><div class="disp">6/6</div><p>Basic missions passed</p></div>
+    <div class="q">What it does</div>
+    <h2>Built to be trusted with no doctor in the room</h2>
+    <div class="list">
+      <div><h3>Talk in plain words</h3><p>Type how you feel, the way you’d say it out loud.</p></div>
+      <div><h3>Urgency comes first</h3><p>Every answer leads with how serious it is, in a word and a color.</p></div>
+      <div><h3>Every answer has a source</h3><p>It only names conditions from 35 researched spaceflight conditions, and shows where each came from.</p></div>
+      <div><h3>A second check that never sleeps</h3><p>A rules engine can raise the alarm even when the AI doesn’t.</p></div>
+      <div><h3>The crew can correct it</h3><p>Tap <b>Wrong?</b> on anything it misread and the answer updates.</p></div>
+      <div><h3>No internet needed</h3><p>A local AI and the research run on one small computer in the habitat.</p></div>
     </div>
   </div>
 
+  <div class="panel flow">
+    <div class="q">How it works</div>
+    <h2>How VITALS answers</h2>
+    <svg viewBox="0 0 600 1300">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7FA3DD"/></marker><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#E73337"/></marker></defs>
+<g font-family="Plex" fill="#D8DAE0">
+<rect x="80" y="10" width="330" height="104" fill="none" stroke="#fff" stroke-width="3"/>
+<text x="104" y="56" font-family="Tektur" font-weight="700" font-size="34" fill="#fff">Ask</text>
+<text x="104" y="90" font-size="22" fill="#D8DAE0">in plain words</text>
+<line x1="245.0" y1="117" x2="245.0" y2="174" stroke="#7FA3DD" stroke-width="4" marker-end="url(#a)"/>
+<rect x="80" y="180" width="330" height="104" fill="none" stroke="#fff" stroke-width="3"/>
+<text x="104" y="226" font-family="Tektur" font-weight="700" font-size="34" fill="#fff">Read</text>
+<text x="104" y="260" font-size="22" fill="#D8DAE0">words become findings</text>
+<line x1="245.0" y1="287" x2="245.0" y2="344" stroke="#7FA3DD" stroke-width="4" marker-end="url(#a)"/>
+<rect x="80" y="350" width="330" height="104" fill="none" stroke="#fff" stroke-width="3"/>
+<text x="104" y="396" font-family="Tektur" font-weight="700" font-size="34" fill="#fff">Retrieve</text>
+<text x="104" y="430" font-size="22" fill="#D8DAE0">pulls the matching pages</text>
+<line x1="245.0" y1="457" x2="245.0" y2="514" stroke="#7FA3DD" stroke-width="4" marker-end="url(#a)"/>
+<rect x="80" y="520" width="330" height="104" fill="#E73337" stroke="#E73337" stroke-width="3"/>
+<text x="104" y="566" font-family="Tektur" font-weight="700" font-size="34" fill="#fff">Reason</text>
+<text x="104" y="600" font-size="22" fill="#fff">AI reads only those pages</text>
+<line x1="245.0" y1="627" x2="245.0" y2="684" stroke="#7FA3DD" stroke-width="4" marker-end="url(#a)"/>
+<rect x="80" y="690" width="330" height="104" fill="#E73337" stroke="#E73337" stroke-width="3"/>
+<text x="104" y="736" font-family="Tektur" font-weight="700" font-size="34" fill="#fff">Check</text>
+<text x="104" y="770" font-size="22" fill="#fff">drops anything invented</text>
+<line x1="245.0" y1="797" x2="245.0" y2="834" stroke="#7FA3DD" stroke-width="4" marker-end="url(#a)"/>
+<circle cx="245.0" cy="864" r="24" fill="#0A0E1A" stroke="#fff" stroke-width="3"/>
+<text x="285.0" y="872" font-size="20" fill="#A9ABAF">escalate if either one says so</text>
+<line x1="245.0" y1="890" x2="245.0" y2="928" stroke="#7FA3DD" stroke-width="4" marker-end="url(#a)"/>
+<rect x="80" y="934" width="450" height="150" fill="#fff"/>
+<text x="104" y="984" font-family="Tektur" font-weight="800" font-size="40" fill="#0A0E1A">Answer</text>
+<text x="104" y="1024" font-size="22" fill="#1E2A47">how urgent, what it could be,</text>
+<text x="104" y="1054" font-size="22" fill="#1E2A47">what to do, and the source</text>
+<path d="M77 232.0 H30 V864 H215.0" fill="none" stroke="#E73337" stroke-width="4" marker-end="url(#ar)"/>
+<text x="22" y="548.0" font-family="Tektur" font-weight="700" font-size="22" fill="#fff" transform="rotate(-90 22 548.0)" text-anchor="middle" dy="-8">Rules backstop</text>
+<g transform="translate(450 344)"><path d="M0 18 v80 a70 18 0 0 0 140 0 v-80" fill="#1E2A47" stroke="#7FA3DD" stroke-width="3"/><ellipse cx="70" cy="18" rx="70" ry="18" fill="#1E2A47" stroke="#7FA3DD" stroke-width="3"/><text x="70" y="70" text-anchor="middle" font-family="Tektur" font-weight="700" font-size="30" fill="#fff">35</text><text x="70" y="98" text-anchor="middle" font-size="17">cited conditions</text></g>
+<line x1="448" y1="402.0" x2="416" y2="402.0" stroke="#7FA3DD" stroke-width="4" marker-end="url(#a)"/>
+</g></svg>
+    <p class="note" style="margin-top:auto">There is no flight data to train on, so VITALS grounds a local AI in cited NASA research instead.</p>
+  </div>
+
   <div class="panel">
-    <div class="eyebrow">The prototype</div>
-    <h2>Working now</h2>
-    <img class="shot" src="img/astronaut_answer.png" alt="Astronaut screen showing an answer card">
-    <p class="cap">The astronaut screen: one complaint in, urgency and next steps out — with the research it came from.</p>
-    <div style="margin-bottom:6px"><span class="pill on">Astronaut screen ✓</span><span class="pill on">Offline AI ✓</span><span class="pill on">Rules backstop ✓</span><span class="pill">Ground crew screen · planned</span><span class="pill">Doctor review · planned</span><span class="pill">Sensors · planned</span></div>
-    <img class="shot" src="img/astronaut_vitals_planned.png" alt="Vitals tab marked planned">
-    <p class="cap">Vitals, Doctor notes and Supplies tabs are in the app now, marked <i>planned</i>.</p>
-    <div class="spec" style="margin-top:auto">
-      <div><div class="k">AI MODEL</div><div class="v">Llama 3.2 (3B)</div></div>
-      <div><div class="k">HARDWARE</div><div class="v">Jetson Orin Nano</div></div>
-      <div><div class="k">SAFETY</div><div class="v">Deterministic rules</div></div>
-      <div><div class="k">KNOWLEDGE</div><div class="v">35 NASA conditions</div></div>
+    <div class="q">The prototype</div>
+    <h2>Working today</h2>
+    <img class="shot" src="img/astronaut_answer.png" alt="The astronaut screen showing an answer">
+    <p class="cap">The astronaut screen: one complaint in, urgency and next steps out, with the research it came from.</p>
+    <div class="big">
+      <div>6 of 6<small>basic missions</small></div>
+      <div class="r">18 of 19<small>must-escalate<br>cases caught</small></div>
+      <div>262<small>tests pass</small></div>
     </div>
+    <table class="status">
+      <tr><td><b>Astronaut screen</b></td><td class="ok">Working</td></tr>
+      <tr><td><b>Offline AI and rules backstop</b></td><td class="ok">Working</td></tr>
+      <tr><td><b>Ground crew and doctor screens</b></td><td class="plan">Planned</td></tr>
+      <tr><td><b>Jetson Orin Nano server</b></td><td class="plan">Planned</td></tr>
+      <tr><td><b>Sensors and voice</b></td><td class="plan">Planned</td></tr>
+    </table>
+    <img class="shot" src="img/astronaut_vitals_planned.png" alt="Vitals tab marked planned" style="margin-top:.18in">
+    <p class="cap" style="margin-bottom:0">Running Llama 3.2 offline. Tabs for vitals, doctor notes and supplies are already in the app, marked planned.</p>
   </div>
 </section>
 </body></html>
