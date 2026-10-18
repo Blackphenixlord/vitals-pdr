@@ -28,8 +28,8 @@ Status key: ✅ ready · 🟡 drafted here, team must finish · 🔴 the team ha
 | 10 | Next steps and schedule, weekly deliverables | [10_next_steps_schedule.md](10_next_steps_schedule.md) | ✅ |
 | 11 | Preliminary test plan | [11_preliminary_test_plan.md](11_preliminary_test_plan.md) | ✅ |
 | 12 | Client and/or project storyboards | [12_storyboards.md](12_storyboards.md) | ✅ |
-| 13 | Website or Google Site | [Live site (Gamma)](https://gamma.app/docs/VITALS-o20a7se48kbm9qr) · [website/](website/) | ✅ live, QR codes made |
-| — | Marketing brochure (CDR list, ready now) — front and back | [brochure/brochure.pdf](brochure/brochure.pdf) | ✅ print it |
+| 13 | Website or Google Site | [Live site (Wix)](https://joshuacollado636.wixsite.com/vitals) · [website/](website/) | ✅ live, QR code made |
+| — | Marketing brochure (CDR list, ready now) — tri-fold, front and back, matches the site | [brochure/brochure.pdf](brochure/brochure.pdf) | ✅ print it |
 | 14 | 4-minute video of the PDR prototype | [14_video_scripts.md](14_video_scripts.md) | 🔴 script ready, record it |
 | 15 | 3-minute video of the presentation | [14_video_scripts.md](14_video_scripts.md) | 🔴 script ready, record it |
 | 16 | Complete some basic missions | [15_missions_and_logs.md](15_missions_and_logs.md) · `python -m vitals missions` | ✅ basic 6/6 · advanced A2 18/19 |
