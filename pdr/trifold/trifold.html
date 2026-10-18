@@ -1,0 +1,290 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>VITALS tri-fold</title>
+<style>
+@font-face{font-family:Tektur;src:url(../brochure/fonts/Tektur.ttf);font-weight:400 900;font-stretch:75% 100%}
+@font-face{font-family:Plex;src:url(../brochure/fonts/IBMPlexSans.ttf);font-weight:100 700}
+@page{size:48in 36in;margin:0}
+:root{--bg:#0A0E1A;--card:#161A25;--line:#474A53;--muted:#A9ABAF;--red:#E73337;--navy:#1E2A47;--amber:#F2A33A;--green:#3FB27F}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:#fff;font-family:Plex,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.board{width:48in;height:36in;display:grid;grid-template-columns:12in 24in 12in;position:relative;overflow:hidden;
+ background:radial-gradient(2px 2px at 8% 12%,#fff6 50%,transparent),radial-gradient(2px 2px at 31% 81%,#fff5 50%,transparent),radial-gradient(2px 2px at 47% 33%,#fff4 50%,transparent),radial-gradient(3px 3px at 63% 91%,#fff5 50%,transparent),radial-gradient(2px 2px at 77% 22%,#fff6 50%,transparent),radial-gradient(2px 2px at 93% 64%,#fff4 50%,transparent),radial-gradient(2px 2px at 18% 55%,#fff4 50%,transparent),var(--bg)}
+.panel{padding:.7in .6in;display:flex;flex-direction:column;justify-content:space-between;gap:.3in;height:36in;overflow:hidden}
+.panel.center{padding:.6in .55in .7in}
+.panel.side{zoom:var(--z);width:calc(12in / var(--z));height:calc(36in / var(--z));--z:1.3}
+.fold{position:absolute;top:0;bottom:0;width:0;border-left:3px dashed #ffffff10}
+h1,h2,h3,.disp{font-family:Tektur,sans-serif;font-weight:800;line-height:1.05}
+.sec{display:flex;flex-direction:column;gap:.16in}
+.num{font-family:Tektur;font-weight:800;color:var(--red);font-size:26pt;letter-spacing:.12em}
+h2{font-size:58pt}
+h3{font-size:24pt}
+p,li,td,th{font-size:23pt;line-height:1.38;color:#DADBDE}
+.muted{color:var(--muted)}
+.small{font-size:19pt}
+.card{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:.22in .26in}
+.hot{border-color:var(--red)!important}
+.quote{border-left:8px solid var(--red);padding:.06in 0 .06in .25in}
+.quote p{font-family:Tektur;font-weight:700;font-size:30pt;color:#fff;line-height:1.25}
+table{border-collapse:collapse;width:100%}
+th{font-family:Tektur;font-weight:700;font-size:18pt;color:var(--red);text-align:left;letter-spacing:.06em;padding:.06in .1in;border-bottom:2px solid var(--line);text-transform:uppercase}
+td{padding:.07in .1in;border-bottom:1px solid #ffffff14;font-size:21pt;line-height:1.32;vertical-align:top}
+td b{color:#fff}
+.win td{background:#E7333718}
+.chip{display:inline-block;white-space:nowrap;border:2px solid var(--line);border-radius:999px;padding:.04in .18in;font-size:18pt;color:var(--muted);margin:0 .06in .08in 0}
+.chip.ok{border-color:var(--green);color:#fff}
+.chip.warn{border-color:var(--amber);color:#fff}
+.chip.no{border-color:var(--red);color:#fff}
+img.shot{width:100%;border-radius:16px;border:2px solid var(--line);display:block}
+.cap{font-size:17pt;color:var(--muted);margin-top:.06in}
+/* header */
+.header{display:grid;grid-template-columns:3.4in 1fr 3.3in;gap:.35in;align-items:center;background:linear-gradient(135deg,#161A25,#0E1424);border:3px solid var(--line);border-radius:30px;padding:.3in .4in}
+.header img.emb{width:3.4in;height:3.4in;filter:drop-shadow(0 0 40px #1E2A47)}
+.header h1{font-size:118pt;letter-spacing:.04em}
+.header .team{font-family:Tektur;font-weight:700;font-size:34pt;color:var(--red);letter-spacing:.06em}
+.header .proj{font-size:20pt;color:#fff;margin-top:.1in;line-height:1.3}
+.header .meta{font-size:17pt;color:var(--muted);margin-top:.12in;line-height:1.45}
+.header .meta b{color:#fff;font-weight:600}
+.qrbox{text-align:center}
+.qrbox .q{background:#fff;border-radius:22px;padding:.16in;width:2.9in;height:2.9in;margin:0 auto}
+.qrbox img{width:100%;height:100%;display:block}
+.qrbox p{font-family:Tektur;font-weight:700;font-size:17pt;margin-top:.1in}
+.tnum{display:inline-block;border-bottom:3px solid #fff;min-width:1.4in;text-align:center;color:#fff;font-family:Tektur}
+/* flow */
+.flow{display:flex;align-items:stretch;gap:.1in;flex-wrap:nowrap}
+.node{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:.12in .12in;text-align:center;flex:1;display:flex;flex-direction:column;justify-content:center}
+.node .k{font-family:Tektur;font-weight:800;font-size:19pt;color:#fff;letter-spacing:.04em}
+.node .d{font-size:15pt;color:var(--muted);line-height:1.25;margin-top:.04in}
+.arrow{align-self:center;color:var(--red);font-family:Tektur;font-size:26pt;font-weight:800}
+.mini .node .k{font-size:17pt}
+.opt{display:grid;grid-template-columns:2.2in 1fr;gap:.2in;align-items:center}
+.opt .lab{font-family:Tektur;font-weight:700;font-size:21pt}
+.opt .lab span{display:block;font-size:16pt;color:var(--muted);font-family:Plex;font-weight:400;margin-top:.04in}
+.side{display:flex;gap:.12in;margin-top:.12in;align-items:stretch}
+.side .node{flex:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.3in}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.16in}
+.frame{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:.1in;display:flex;flex-direction:column;gap:.05in}
+.frame .fn{font-family:Tektur;font-weight:800;color:var(--red);font-size:18pt}
+.frame p{font-size:16.5pt;line-height:1.28}
+.frame.plan{border-style:dashed}
+.frame img{width:100%;border-radius:8px;display:block}
+.stat{text-align:center;padding:.14in .1in}
+.stat .disp{font-size:56pt}
+.stat .disp.r{color:var(--red)}
+.stat p{font-size:16pt;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+pre{font-family:ui-monospace,Consolas,monospace;font-size:15.5pt;line-height:1.38;color:#DADBDE;white-space:pre;overflow:hidden}
+pre .c{color:var(--red)}
+pre .g{color:var(--green)}
+pre .a{color:var(--amber)}
+.bar{height:.34in;background:#ffffff12;border-radius:999px;overflow:hidden;border:2px solid var(--line)}
+.bar i{display:block;height:100%;width:62%;background:linear-gradient(90deg,var(--red),#ff6b6e)}
+.tick{width:.5in;height:5px;background:var(--red)}
+.fine{font-size:16pt;color:var(--muted)}
+</style></head>
+<body>
+<section class="board">
+<div class="fold" style="left:12in"></div><div class="fold" style="left:36in"></div>
+
+<!-- ================= LEFT ================= -->
+<div class="panel side" style="--z:1.13">
+  <div class="sec">
+    <div class="num">01 · PROBLEM STATEMENT</div>
+    <h2>Earth is 40 minutes away</h2>
+    <p>On the ISS a flight surgeon is one radio call away. On Mars the delay is <b>4 to 40 minutes each way</b>, with blackouts NASA plans for of <b>up to two weeks</b> — and usually <b>no physician on board</b>.</p>
+    <div class="quote"><p>Crews need an onboard system a non-medical crewmember can talk to in plain words — offline, space-aware, clear about when to call for help, and showing where every answer came from.</p></div>
+    <div class="grid3">
+      <div class="card"><h3 style="font-size:22pt">What could this be?</h3></div>
+      <div class="card"><h3 style="font-size:22pt">How serious is it?</h3></div>
+      <div class="card"><h3 style="font-size:22pt">What do we do now?</h3></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="num">02 · RESEARCH 1</div>
+    <h2 style="font-size:40pt">There's no data to train on</h2>
+    <p>NASA's own risk models say in-flight medical data is <b>severely limited</b> — for some serious conditions the in-flight count is <b>zero</b>. So VITALS grounds a pretrained model in <b>cited research</b> instead of training one.</p>
+    <table>
+      <tr><th>Condition</th><th>What space changes</th></tr>
+      <tr><td><b>Fluid-shift congestion</b></td><td>Day 1, looks like a cold — not an infection</td></tr>
+      <tr><td><b>Space motion sickness</b></td><td>Early flight only — day 60 means something else</td></tr>
+      <tr><td><b>Decompression sickness</b></td><td>Joint pain after an EVA outranks a strain</td></tr>
+      <tr><td><b>Renal stone</b></td><td>Bone loss + dehydration raise the risk</td></tr>
+      <tr><td><b>Jugular vein clot</b></td><td>Found on ISS with no symptoms — escalate red flags</td></tr>
+    </table>
+    <p class="small muted">35 conditions · 145 findings · every rule cited (NASA IMM, HRP evidence reports, flight-surgeon papers)</p>
+  </div>
+
+  <div class="sec">
+    <div class="num">03 · CONSTRAINTS &amp; REQUIREMENTS</div>
+    <table>
+      <tr><th>ID</th><th>Constraint</th></tr>
+      <tr><td><b>C1</b></td><td>Fully <b>offline</b> — 40-min delay, 2-week blackouts</td></tr>
+      <tr><td><b>C2</b></td><td>User is <b>non-medical</b> and stressed</td></tr>
+      <tr><td><b>C3</b></td><td>Runs on a <b>Jetson Orin Nano 8 GB</b></td></tr>
+      <tr><td><b>C4</b></td><td>Almost no in-flight medical data</td></tr>
+      <tr><td><b>C5</b></td><td>Health data is private</td></tr>
+      <tr><td><b>C6</b></td><td>Small screens, gloves, bad light</td></tr>
+    </table>
+    <div>
+      <span class="chip ok">F1 plain words ✓</span><span class="chip ok">F3 no invented conditions ✓</span><span class="chip ok">F4 every source from the KB ✓</span><span class="chip warn">F5 escalation 18/19</span><span class="chip ok">F7 Wrong? button ✓</span><span class="chip no">F8 "nothing fits" — weakest</span><span class="chip ok">F10 PIN + server roles ✓</span><span class="chip ok">F11 emergency button ✓</span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="num">05 · RESEARCH 2 — MEASURED, NOT GUESSED</div>
+    <table>
+      <tr><th>Model</th><th>Right condition</th><th>Missed escalations</th><th>Time</th></tr>
+      <tr class="win"><td><b>llama3.2 3B</b></td><td>19/26 · 73%</td><td><b>0</b></td><td>~4 s</td></tr>
+      <tr><td><b>llama3.1 8B</b></td><td>22/26 · 85%</td><td>0</td><td>~8 s</td></tr>
+      <tr><td><b>llama3.2 1B</b></td><td>invented a symptom</td><td>backstop only</td><td>~80 s</td></tr>
+    </table>
+    <p class="small muted">33-prompt bench, 26 Sep 2026. The rules backstop took missed escalations from 3 → 0. Never demo on 1B.</p>
+  </div>
+</div>
+
+<!-- ================= CENTER ================= -->
+<div class="panel center" style="zoom:1.07;width:calc(24in / 1.07);height:calc(36in / 1.07)">
+  <div class="header">
+    <img class="emb" src="../brochure/img/emblem.png" alt="VITALS emblem">
+    <div>
+      <div class="team">TEAM TETHER</div>
+      <h1>VITALS</h1>
+      <div class="proj"><b>NASA project:</b> Medical Diagnostic System with Machine Learning &amp; Artificial Intelligence (From a non-Medical Person's Perspective)</div>
+      <div class="meta"><b>South Texas ISD Science Academy</b> · Mercedes, Texas · Team # <span class="tnum">&nbsp;</span><br>
+      <b>Joshua Collado</b> · <b>Joaquin</b> · <b>Cruz</b> &nbsp;—&nbsp; Teacher: Ms. Sylvia Odoms</div>
+    </div>
+    <div class="qrbox"><div class="q"><img src="../website/qr.png" alt="QR to website"></div><p>Scan for the website</p></div>
+  </div>
+
+  <div class="grid2">
+    <div class="sec">
+      <div class="num">04 · BRAINSTORMING 1 — THE BRAIN</div>
+      <img class="shot" src="../img/brainstorm_1.png" alt="Brainstorm 1 board">
+      <p class="small">Classifier ✗ (no data) · Cloud AI ✗ (no internet) · <b>Grounded local AI + rules ✓</b></p>
+    </div>
+    <div class="sec">
+      <div class="num">06 · BRAINSTORMING 2 — SCREENS &amp; HARDWARE</div>
+      <img class="shot" src="../img/brainstorm_2.png" alt="Brainstorm 2 board">
+      <p class="small">Astronaut → ground crew → doctor · <b>Jetson server + 3 Pi screens ✓</b></p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="num">07 · FUNCTIONAL DIAGRAMS — THE THREE BEST</div>
+    <div class="card" style="display:flex;flex-direction:column;gap:.16in">
+      <div class="opt mini"><div class="lab">B · Rules only<span>Explainable, can't converse</span></div>
+        <div class="flow"><div class="node"><div class="k">MESSAGE</div></div><div class="arrow">→</div><div class="node"><div class="k">EXTRACT</div></div><div class="arrow">→</div><div class="node"><div class="k">SCORE</div></div><div class="arrow">→</div><div class="node"><div class="k">RANK</div></div></div></div>
+      <div class="opt mini"><div class="lab">D · Local AI only<span>Talks well, invents things</span></div>
+        <div class="flow"><div class="node"><div class="k">MESSAGE</div></div><div class="arrow">→</div><div class="node"><div class="k">LOCAL LLM</div></div><div class="arrow">→</div><div class="node"><div class="k">FREE TEXT</div></div></div></div>
+      <div class="opt"><div class="lab" style="color:var(--red)">E · Chosen ✓<span>Grounded AI + rules backstop</span></div>
+        <div>
+          <div class="flow">
+            <div class="node"><div class="k">SCOPE</div><div class="d">medical?</div></div><div class="arrow">→</div>
+            <div class="node"><div class="k">EXTRACT</div><div class="d">words → findings</div></div><div class="arrow">→</div>
+            <div class="node"><div class="k">RETRIEVE</div><div class="d">cited KB pages</div></div><div class="arrow">→</div>
+            <div class="node hot"><div class="k">REASON</div><div class="d">local AI reads only those</div></div><div class="arrow">→</div>
+            <div class="node hot"><div class="k">CHECK</div><div class="d">drop anything invented</div></div><div class="arrow">→</div>
+            <div class="node"><div class="k">ANSWER</div><div class="d">level · why · what to do · sources</div></div>
+          </div>
+          <div class="side">
+            <div class="node" style="width:2.7in"><div class="k">KNOWLEDGE BASE</div><div class="d">35 cited conditions</div></div>
+            <div class="node" style="flex:1"><div class="k">ENGINE — RULES BACKSTOP</div><div class="d">escalates if the model OR the engine says so</div></div>
+            <div class="node" style="width:3.2in"><div class="k">MISSION LOG</div><div class="d">every step · subsystem · status · time</div></div>
+          </div>
+        </div></div>
+    </div>
+  </div>
+
+  <div class="grid2" style="flex:1;min-height:0">
+    <div class="sec">
+      <div class="num">08 · DECISION MATRIX</div>
+      <table>
+        <tr><th>Criterion</th><th>Wt</th><th>A</th><th>B</th><th>D</th><th>E</th></tr>
+        <tr><td>Fully offline</td><td>5</td><td>5</td><td>5</td><td>5</td><td><b>5</b></td></tr>
+        <tr><td>Never misses an escalation</td><td>5</td><td>2</td><td>4</td><td>2</td><td><b>5</b></td></tr>
+        <tr><td>Shows its sources</td><td>4</td><td>1</td><td>5</td><td>2</td><td><b>5</b></td></tr>
+        <tr><td>Understands real speech</td><td>4</td><td>3</td><td>2</td><td>5</td><td><b>4</b></td></tr>
+        <tr><td>Works with the data that exists</td><td>4</td><td>1</td><td>4</td><td>4</td><td><b>4</b></td></tr>
+        <tr><td>Runs on the Jetson</td><td>3</td><td>5</td><td>5</td><td>3</td><td><b>3</b></td></tr>
+        <tr><td>Testable, repeatable</td><td>3</td><td>3</td><td>5</td><td>2</td><td><b>5</b></td></tr>
+        <tr><td>Buildable this year</td><td>2</td><td>2</td><td>4</td><td>5</td><td><b>3</b></td></tr>
+        <tr class="win"><td><b>Total / 150</b></td><td></td><td>83</td><td>127</td><td>104</td><td><b style="color:var(--red);font-size:22pt">132</b></td></tr>
+      </table>
+      <p class="small muted">A classifier · B rules · D local AI alone · E grounded AI + rules. Model: llama3.2 3B (69/85). Deployment: Jetson + 3 Pis (wins).</p>
+    </div>
+    <div class="sec">
+      <div class="num">09 · FIGMA + CODE — THE ANSWER BOX</div>
+      <img class="shot" src="../img/astronaut_answer.png" alt="Astronaut screen answer">
+      <div class="card" style="padding:.16in .2in"><pre><span class="c"># src/vitals/server.py — run_pipeline() (trimmed)</span>
+scope = classify(latest, knowledge_base)        <span class="c"># SCOPE</span>
+observations = KeywordExtractor().extract(      <span class="c"># EXTRACT</span>
+    complaint, knowledge_base)
+retrieved = retrieve(knowledge_base, complaint, <span class="c"># RETRIEVE</span>
+    observations, limit=RETRIEVAL_LIMIT)
+answer = ask(knowledge_base, complaint,         <span class="c"># REASON + CHECK</span>
+    retrieved, observations=observations,       <span class="c"># + ENGINE backstop</span>
+    model=model)</pre></div>
+      <p class="small muted">Figma by Cruz is the idea; the built screen follows it. Same steps run in <b style="color:#fff">vitals ask</b>, so the screen can't drift from what's tested.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= RIGHT ================= -->
+<div class="panel side">
+  <div class="sec">
+    <div class="num">12 · STORYBOARD — "IT COMES IN WAVES"</div>
+    <p class="small">Commander Rivera, flight day 63 on a Mars transit. Ground is 18 minutes away.</p>
+    <div class="grid3">
+      <div class="frame"><div class="fn">1</div><img src="../img/login.png" alt=""><p>Enters her PIN</p></div>
+      <div class="frame"><div class="fn">2</div><img src="../img/astronaut_start.png" alt=""><p>"Bad pain in my side, comes in waves… blood when I pee"</p></div>
+      <div class="frame"><div class="fn">3</div><img src="../img/answer_card.png" alt="" style="height:1.15in;object-fit:cover;object-position:top"><p><b>URGENT</b> — renal stone, with the NASA source</p></div>
+      <div class="frame"><div class="fn">4</div><p>Taps <b>Wrong?</b> on something it misread — the answer updates</p></div>
+      <div class="frame"><div class="fn">5</div><p>One follow-up question at a time, never repeated</p></div>
+      <div class="frame plan"><div class="fn">6 · PLANNED</div><p>Ground crew redacts the case, sends it to the doctor, who agrees and adds a note</p></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="num">11 · PRELIMINARY TEST PLAN</div>
+    <table>
+      <tr><th>Level</th><th>Pass when</th><th>Now</th></tr>
+      <tr><td><b>Unit</b> — every module</td><td>all pass</td><td><span class="chip ok">262 ✓</span></td></tr>
+      <tr><td><b>Missed escalations</b></td><td>must be 0</td><td><span class="chip warn">1 of 19</span></td></tr>
+      <tr><td><b>Vignettes</b> — 60 real-speech prompts</td><td>hits ≥ 80%</td><td><span class="chip warn">73–85%</span></td></tr>
+      <tr><td><b>Offline</b> — network unplugged</td><td>answers, page loads</td><td><span class="chip ok">✓</span></td></tr>
+      <tr><td><b>User testing</b> — 5+ people</td><td>level read in ≤ 3 s</td><td><span class="chip">after PDR</span></td></tr>
+      <tr><td><b>Jetson timing</b></td><td>≤ 15 s an answer</td><td><span class="chip">Nov</span></td></tr>
+    </table>
+  </div>
+
+  <div class="sec">
+    <div class="num">16–17 · MISSIONS &amp; LOGS</div>
+    <div class="grid3">
+      <div class="card stat"><div class="disp">6/6</div><p>Basic missions</p></div>
+      <div class="card stat"><div class="disp r">18/19</div><p>Must-escalate (A2)</p></div>
+      <div class="card stat"><div class="disp">0.3 s</div><p>Basic run time</p></div>
+    </div>
+    <div class="card" style="padding:.14in .18in"><pre>2026-10-17T22:33:50Z  KB        kb/          <span class="g">PASS</span>
+2026-10-17T22:33:50Z  SENSORS   sensors.py   <span class="a">NOT_CONNECTED</span>
+2026-10-17T22:33:50Z  SCOPE     "hi"         <span class="g">PASS</span>
+2026-10-17T22:33:50Z  ENGINE    29 cases     <span class="g">PASS</span>
+2026-10-17T22:33:50Z  CASES     owner check  <span class="g">PASS</span>
+2026-10-17T22:33:50Z  MISSION   run          <span class="g">OK</span>  B1–B6</pre></div>
+    <p class="small muted">Timestamp · subsystem · element · status — one line per step. The miss: pain-only bends after an EVA. Fix in progress.</p>
+  </div>
+
+  <div class="sec">
+    <div class="num">60% PROTOTYPE · NEXT STEPS</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="disp" style="font-size:40pt">~62% built</span><span class="small muted">weighted by subsystem</span></div>
+    <div class="bar"><i></i></div>
+    <table>
+      <tr><td><b>Nov</b></td><td>Flash the Jetson, time an answer · fix "nothing fits"</td></tr>
+      <tr><td><b>Dec–Feb</b></td><td>Ground crew + doctor screens · first sensor · user testing</td></tr>
+      <tr><td><b>Mar · CDR</b></td><td>90% prototype · voice input</td></tr>
+      <tr><td><b>May · FDR</b></td><td>Johnson Space Center</td></tr>
+    </table>
+    <p class="fine">VITALS is a student prototype for decision support — a doctor has the final say. Not a medical device.</p>
+  </div>
+</div>
+</section>
+</body></html>

@@ -36,6 +36,7 @@ Status key: ✅ ready · 🟡 drafted here, team must finish · 🔴 the team ha
 | 17 | Log entries recording subsystem, element, current status, timestamp | [logs/](logs/) · `python -m vitals log` | ✅ |
 | 18 | Team D.A.A.N. (engineering notebook) | — | optional on the HUNCH list — skipped |
 | — | 60% working prototype — what works, what doesn't | [13_prototype_status.md](13_prototype_status.md) | ✅ |
+| — | **Tri-fold display board** (36″×48″, matches the site) | [trifold/](trifold/) | ✅ print it — write in the team number |
 
 ## Prove it in two commands
 
