@@ -11,7 +11,7 @@ The strip across the top of the tri-fold. The requirement list asks for exactly 
 | **Names** | Joshua Collado (project lead, main coder) · Joaquin (medical research, co-coder) · Cruz (UI design, user testing) |
 | **QR code** | → the website — `website/qr.png` |
 
-Teacher: Ms. Sylvia Odoms · Regional mentor: Michael Hayes, Voyager Technologies
+Sponsor: Ms. Sylvia Odoms · Regional mentor: Michael Hayes, Voyager Technologies
 
 ## Suggested layout
 
