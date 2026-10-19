@@ -1,6 +1,6 @@
 # Website
 
-**Live:** https://joshuacollado636.wixsite.com/vitals — built in Wix (Harmony editor). Fonts: Tektur
+**Live:** https://jc-portfolio.codes/vitals/ (GitHub Pages, repo Blackphenixlord/vitals). Original Wix version: https://joshuacollado636.wixsite.com/vitals. Fonts: Tektur
 (headings) + IBM Plex Sans (body). Colors: navy `#0A0E1A`, card `#161A25`, red `#E73337`. The brochure uses
 the same fonts and colors.
 
