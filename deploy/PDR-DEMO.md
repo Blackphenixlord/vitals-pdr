@@ -22,8 +22,7 @@ Plug both boards into your home network over **Wi-Fi**, and connect them to each
 
 ```bash
 cat /etc/nv_tegra_release           # should say R36 (JetPack 6)
-gh auth login                       # repo is private (or copy the vitals-pdr folder over on a USB stick)
-gh repo clone Blackphenixlord/vitals-pdr
+git clone https://github.com/Blackphenixlord/vitals-pdr.git
 cd vitals-pdr
 sudo ./deploy/install.sh jetson     # installs Ollama + llama3.2 + VITALS, starts it on boot
 sudo ./deploy/demo-link.sh jetson   # cable address 10.42.0.1
@@ -39,7 +38,7 @@ curl -s http://127.0.0.1:8000/ | head -3    # the login page answers
 ### On the Pi (Raspberry Pi OS **with desktop**)
 
 ```bash
-# get the cable script from the Jetson, or copy deploy/demo-link.sh over on a USB stick
+curl -fsSLO https://raw.githubusercontent.com/Blackphenixlord/vitals-pdr/main/deploy/demo-link.sh
 sudo bash demo-link.sh pi                    # cable address 10.42.0.2
 ping -c 3 10.42.0.1                          # must answer
 curl -fsSL http://10.42.0.1:8000/install/astronaut | sudo bash

@@ -25,8 +25,7 @@ Needs: JetPack 6 flashed, internet for the first install (it downloads Ollama an
 the models, ~6 GB), and a copy of this repo on the Jetson.
 
 ```bash
-gh auth login          # the repo is private: sign in once (or copy the folder over on a USB stick)
-gh repo clone Blackphenixlord/vitals-pdr
+git clone https://github.com/Blackphenixlord/vitals-pdr.git
 cd vitals-pdr
 sudo ./deploy/install.sh jetson
 ```
