@@ -18,22 +18,58 @@ The laptop still comes as the backup. It runs the same thing (`python -m vitals 
 Plug both boards into your home network over **Wi-Fi**, and connect them to each other with the
 **Ethernet cable**. The cable link and the Wi-Fi work at the same time.
 
-### On the Jetson
+> **Do the Jetson FIRST, then the Pi.** The Pi downloads its installer from the Jetson, so the
+> Pi's step 3 fails until the Jetson is set up and running.
+
+### On the Jetson (do this first; needs internet, a monitor and keyboard, cable plugged into the Pi)
+
+**Step 1: check the Jetson's software version**
 
 ```bash
-cat /etc/nv_tegra_release           # should say R36 (JetPack 6)
+cat /etc/nv_tegra_release
+```
+
+It should show **R36** somewhere (that's JetPack 6). If it shows anything else, stop and ask before
+going on.
+
+**Step 2: download VITALS**
+
+```bash
 git clone https://github.com/Blackphenixlord/vitals-pdr.git
 cd vitals-pdr
-sudo ./deploy/install.sh jetson     # installs Ollama + llama3.2 + VITALS, starts it on boot
-sudo ./deploy/demo-link.sh jetson   # cable address 10.42.0.1
 ```
 
-When the installer finishes, check:
+**Step 3: install it (the long one, about 20 to 40 minutes)**
 
 ```bash
-ollama ps                                   # PROCESSOR should say GPU (CPU = too slow for a demo)
-curl -s http://127.0.0.1:8000/ | head -3    # the login page answers
+sudo ./deploy/install.sh jetson
 ```
+
+This installs Ollama and the llama3.2 AI model, sets up VITALS, and starts it every time the
+Jetson boots. Most of the time is the model downloading. Let it finish. It ends with a summary
+showing the Jetson's address.
+
+**Step 4: give the Jetson its cable address**
+
+```bash
+sudo ./deploy/demo-link.sh jetson
+```
+
+You should see `ok  jetson is 10.42.0.1`.
+
+**Step 5: check it works**
+
+```bash
+ollama ps
+curl -s http://127.0.0.1:8000/api/health
+```
+
+- `ollama ps` → the PROCESSOR column should say **GPU**. If it says CPU, answers will be too slow
+  for a demo; see "If something goes wrong" below.
+- The `curl` line should print some text starting with `{`. If it prints nothing, VITALS isn't
+  running: `systemctl status vitals`.
+
+If anything prints red text or `STOPPED:`, take a photo of it. The message says what went wrong.
 
 ### On the Pi (Raspberry Pi OS **with desktop**)
 
@@ -103,6 +139,7 @@ and doctor screens are planned; they'll be two more Pis on the same cable networ
 
 | Problem | Fix |
 |---|---|
+| Pi step 3 fails / does nothing | The Jetson isn't set up or isn't on. Do the Jetson steps first, then run Pi step 3 again |
 | Pi says it's waiting for the server | Jetson not up yet, or the cable is loose. Check from the Pi with `ping 10.42.0.1` |
 | Answers take 30+ seconds every time | Model is on the CPU. On the Jetson, `ollama ps` should say GPU. `sudo nvpmodel -m 1` and restart: `sudo systemctl restart ollama vitals` |
 | "Model not found" | Jetson needs internet once: `ollama pull llama3.2` |
