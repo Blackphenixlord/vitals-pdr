@@ -19,7 +19,7 @@ The D.A.A.N. is optional on the HUNCH list — skipped this round.
 | Sun 18 | Record the 4-min prototype video (script: `14_video_scripts.md`) | J | uploaded, link on the website |
 | Sun 18 | Fix the missed escalation if time allows: pain-only bends after EVA (DCS weights) | Q, J | `vitals missions --advanced` A2 19/19 |
 | Mon 19 | Record the 3-min presentation video — each person takes a section | All | uploaded, link on the website |
-| Mon 19 | Ask Ms. Odoms for the team number; confirm registration (closes Nov 1) | J | number on the header board |
+| Wed 21 | Team number is assigned at PDR; write it on the header blank (school number TX151 is already printed) | All | number on the board |
 | Mon 19 | Print: tri-fold board panels, header strip with QR, brochures (double-sided) | C | printed |
 | Tue 20 | Build the tri-fold; dry run the 3-minute talk; practice the live demo offline | All | one full run with no internet |
 | Tue 20 | Charge laptop; `docker compose up` or `vitals serve` tested on the demo laptop | J | answer shows with the network off |

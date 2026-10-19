@@ -9,8 +9,7 @@ look as the website and brochure (Tektur + IBM Plex Sans, navy/red).
 | `trifold_panels.pdf` | The same board as 3 pages: left 12×36, center 24×36, right 12×36. Print each panel separately |
 | `trifold.html` | Source. Edit it, then re-export with playwright (see `../brochure/build.py`) |
 
-**Before printing:** write the team number on the header line (from Ms. Odoms). You can also fix it in
-the HTML first.
+**Team number:** assigned on PDR day. Print as is and write it on the blank line in the header.
 
 Every item on the PDR list is on the board and numbered to match `pdr/README.md` (01–12, 16–17). The
 QR code goes to the website. Items 13–15 (website, videos) are covered by the QR code.

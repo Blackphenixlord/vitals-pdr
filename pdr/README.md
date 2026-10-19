@@ -15,7 +15,7 @@ Status key: ✅ ready · 🟡 drafted here, team must finish · 🔴 the team ha
 
 | # | PDR list item | Where | Status |
 |---|---|---|---|
-| — | **Header board:** school, name, team number, NASA project name, team project name, QR code (website) | [00_header_board.md](00_header_board.md) | 🟡 team number — ask Ms. Odoms |
+| — | **Header board:** school, name, team number, NASA project name, team project name, QR code (website) | [00_header_board.md](00_header_board.md) | ✅ school number TX151 · team number assigned on PDR day (write it in) |
 | 1 | Problem statement | [01_problem_statement.md](01_problem_statement.md) | ✅ |
 | 2 | Research 1 — critical effort | [02_research_1.md](02_research_1.md) | ✅ |
 | 3 | Constraints — requirements | [03_constraints_requirements.md](03_constraints_requirements.md) | ✅ |
@@ -28,7 +28,7 @@ Status key: ✅ ready · 🟡 drafted here, team must finish · 🔴 the team ha
 | 10 | Next steps and schedule, weekly deliverables | [10_next_steps_schedule.md](10_next_steps_schedule.md) | ✅ |
 | 11 | Preliminary test plan | [11_preliminary_test_plan.md](11_preliminary_test_plan.md) | ✅ |
 | 12 | Client and/or project storyboards | [12_storyboards.md](12_storyboards.md) | ✅ |
-| 13 | Website or Google Site | [Live site (Wix)](https://joshuacollado636.wixsite.com/vitals) · [GitHub Pages copy + PDFs](https://jc-portfolio.codes/vitals/) · [website/](website/) | ✅ live, QR code made |
+| 13 | Website or Google Site | [Live site (Wix)](https://joshuacollado636.wixsite.com/vitals) · [website/](website/) | ✅ live, QR code made |
 | — | Marketing brochure (CDR list, ready now) — tri-fold, front and back, matches the site | [brochure/brochure.pdf](brochure/brochure.pdf) | ✅ print it |
 | 14 | 4-minute video of the PDR prototype | [14_video_scripts.md](14_video_scripts.md) | 🔴 script ready, record it |
 | 15 | 3-minute video of the presentation | [14_video_scripts.md](14_video_scripts.md) | 🔴 script ready, record it |
