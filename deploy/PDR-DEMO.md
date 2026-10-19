@@ -37,15 +37,40 @@ curl -s http://127.0.0.1:8000/ | head -3    # the login page answers
 
 ### On the Pi (Raspberry Pi OS **with desktop**)
 
+> **Order matters.** Step 1 can be done any time. Steps 2 and 3 only work after the Jetson has
+> finished `install.sh jetson` **and** `demo-link.sh jetson`, with the cable plugged in. Keep the
+> Pi's Wi-Fi on the whole time so it still has internet.
+
+**Step 1: get the cable script and give the Pi its cable address**
+
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/Blackphenixlord/vitals-pdr/main/deploy/demo-link.sh
-sudo bash demo-link.sh pi                    # cable address 10.42.0.2
-ping -c 3 10.42.0.1                          # must answer
+sudo bash demo-link.sh pi
+```
+
+You should see `ok  pi is 10.42.0.2`. If the cable isn't plugged in yet it says so; that's fine,
+the link comes up by itself once it is.
+
+**Step 2: check the Pi can reach the Jetson**
+
+```bash
+ping -c 3 10.42.0.1
+```
+
+- Replies like `64 bytes from 10.42.0.1` → good, go to step 3.
+- `Destination Host Unreachable` → the Jetson isn't finished yet, `demo-link.sh jetson` wasn't
+  run, or the cable is loose.
+
+**Step 3: install the astronaut screen and reboot**
+
+```bash
 curl -fsSL http://10.42.0.1:8000/install/astronaut | sudo bash
 sudo reboot
 ```
 
-After the reboot the Pi opens the VITALS login full screen by itself.
+After the reboot the Pi opens the VITALS login full screen by itself. Log in with PIN **1111**.
+
+If any step prints red text or `STOPPED:`, copy the whole message. It says what went wrong.
 
 ### Then test it the way it will run on Wednesday
 
