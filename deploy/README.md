@@ -1,5 +1,7 @@
 # Deploying VITALS - the Jetson and the three Pis
 
+> **For the PDR demo (one Jetson + one Pi, no internet at the venue): follow [PDR-DEMO.md](PDR-DEMO.md).**
+
 ```
                 ┌────────────── JETSON  (main server) ──────────────┐
                 │  Ollama + model on the GPU    VITALS server :8000 │
@@ -23,8 +25,9 @@ Needs: JetPack 6 flashed, internet for the first install (it downloads Ollama an
 the models, ~6 GB), and a copy of this repo on the Jetson.
 
 ```bash
-git clone https://github.com/Blackphenixlord/lunar-medical-diagnostic.git
-cd lunar-medical-diagnostic
+gh auth login          # the repo is private: sign in once (or copy the folder over on a USB stick)
+gh repo clone Blackphenixlord/vitals-pdr
+cd vitals-pdr
 sudo ./deploy/install.sh jetson
 ```
 
@@ -35,7 +38,7 @@ That installs and starts, in order:
 | power | `nvpmodel -m 1` (25 W) | full GPU speed. The kernel command line is never touched (no `cma=`). |
 | Ollama | ollama.com installer, JetPack 6 GPU build | runs the model on the GPU |
 | Ollama settings | `OLLAMA_KEEP_ALIVE=24h`, listens on 127.0.0.1 only | model stays loaded; the Pis never talk to the model directly |
-| model | `gemma4:e2b-it-qat`, backup `granite4:micro-h` | if the first will not download, the backup is used |
+| model | `llama3.2` (3B), backup `granite4:micro-h` | the model all tests and missions used; backup only if it will not download |
 | VITALS | copied to `/opt/vitals`, Python venv, knowledge base validated | refuses to install a broken knowledge base |
 | service | `vitals.service`, port 8000 on all interfaces, starts on boot, restarts if it crashes | the Pis connect here |
 | data | cases in `/var/lib/vitals`, settings in `/etc/vitals/vitals.env` | survives updates and reboots |

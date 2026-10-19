@@ -36,7 +36,7 @@ set -euo pipefail
 # ---- settings (flags below override; the Jetson's /install/<role> sets the first two)
 ROLE="${VITALS_ROLE:-}"
 SERVER="${VITALS_SERVER:-}"
-MODEL="${VITALS_OLLAMA_MODEL:-gemma4:e2b-it-qat}"            # primary: ~4.3 GB, good structured output
+MODEL="${VITALS_OLLAMA_MODEL:-llama3.2}"                    # primary: 3B, ~2 GB - the model every test and mission used
 FALLBACK_MODEL="${VITALS_FALLBACK_MODEL:-granite4:micro-h}"   # ~1.9 GB, used if the primary will not pull
 PORT="${VITALS_PORT:-8000}"
 POWER_MODE="1"                 # nvpmodel mode; 1 = 25 W on the Orin Nano
@@ -268,7 +268,7 @@ find_repo() {
     here="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || true)"
     REPO_DIR="$(cd "$here/.." 2>/dev/null && pwd || true)"
     [ -f "$REPO_DIR/src/vitals/__init__.py" ] \
-        || die "run this from a copy of the repo on the Jetson:  cd lunar-medical-diagnostic && sudo ./deploy/install.sh jetson"
+        || die "run this from a copy of the repo on the Jetson:  cd vitals-pdr && sudo ./deploy/install.sh jetson"
 }
 
 copy_app() {
